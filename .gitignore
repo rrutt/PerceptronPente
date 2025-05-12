@@ -1,0 +1,13 @@
+backup/
+lib/
+
+*.exe
+*.res
+
+*.json
+
+src/PascalPente
+!bin/PascalPente
+!bin/*.exe
+
+Ninuki-Renju/
