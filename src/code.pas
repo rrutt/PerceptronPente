@@ -16,8 +16,6 @@ uses
 
 //TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
 //TODO: Increase # perceptrons.
-//TODO: After AI game win, randomly mutate least scored perceptron.
-//TODO: After AI game loss, randomly mutate greatest scored perceptron.
 //TODO: Expand grids to 19x19.
 //TODO: ??? Serialize game play moves to file using JSON.
 //TODO: ??? Support "instant replay" from current or past serialized play move file.
@@ -81,9 +79,9 @@ type
     procedure ClearStringGrid;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
-    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
-    procedure AdjustPerceptronsAfterWin;
-    procedure AdjustPerceptronsAfterLoss;
+    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestPerceptron: TPerceptron);
+    procedure AdjustPerceptronsAfterWin(BestPerceptron: TPerceptron);
+    procedure AdjustPerceptronsAfterLoss(BestPerceptron: TPerceptron);
 
   public
 
@@ -179,6 +177,7 @@ procedure TForm1.GameBoardDrawGridMouseDown(Sender: TObject;
 var
   col: integer;
   row: integer;
+  bestPerceptron: TPerceptron;
 begin
   CurrentPlayerIsHuman := true;
 
@@ -192,7 +191,9 @@ begin
 
   GameBoardDrawGrid.MouseToCell(X, Y, col, row);
   TheBoard.Cells[col, row] := CurrentPlayer;
-  AnalyzeMove(col, row);
+
+  bestPerceptron := nil;
+  AnalyzeMove(col, row, bestPerceptron);
 end;
 
 procedure TForm1.GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -328,16 +329,19 @@ var
   bestMatchScore: single;
   matchScore: single;
   p: TPerceptron;
-  bestPerceptron: TPerceptron;
+  bestCellPerceptron: TPerceptron;
+  bestMatchPerceptron: TPerceptron;
   i: integer;
 begin
   bestCol := MIN_COL - 1;
   bestRow := MIN_ROW - 1;
   bestCellScore := NEGATIVE_INFINITY;
-  bestPerceptron := nil;
+  bestMatchPerceptron := nil;
 
   for boardCol := MIN_COL to MAX_COL do begin
     for boardRow := MIN_ROW to MAX_COL do begin
+      bestCellPerceptron := nil;
+
       GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
       if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
         // Guarantee a move will be made if no Perceptron finds a positive match score.
@@ -352,14 +356,14 @@ begin
         for i := Low(Perceptrons) to High(Perceptrons) do begin
           p := Perceptrons[i];
 
-          if (bestPerceptron = nil) then begin
-            bestPerceptron := p;
+          if (bestCellPerceptron = nil) then begin
+            bestCellPerceptron := p;
           end;
 
           matchScore := ComputeMatchScore(p, boardCol, boardRow);
           if (matchScore > bestMatchScore) then begin
             bestMatchScore := matchScore;
-            bestPerceptron := p;
+            bestCellPerceptron := p;
           end;
         end; // for i
 
@@ -367,6 +371,7 @@ begin
 
         if (bestMatchScore > bestCellScore) then begin
           bestCellScore := bestMatchScore;
+          bestMatchPerceptron := bestCellPerceptron;
           bestCol := boardCol;
           bestRow := boardRow;
         end; // if bestMatchScore
@@ -375,10 +380,10 @@ begin
   end; // for boareCol
 
   if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
-    inc(bestPerceptron.UsageCount);
+    inc(bestMatchPerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
-    AnalyzeMove(bestCol, bestRow);
+    AnalyzeMove(bestCol, bestRow, bestMatchPerceptron);
     GameBoardDrawGrid.Invalidate;
   end;
 end;
@@ -459,7 +464,7 @@ begin
 end;
 
 //TODO: Pass best move Perceptron to AnalyzeMove procedure. (Pass nil for human player move.)
-procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
+procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestPerceptron: TPerceptron);
 var
   selfPlayer: CellContent;
   otherPlayer: CellContent;
@@ -549,25 +554,25 @@ begin
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(BestPerceptron);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(BestPerceptron);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(BestPerceptron);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(BestPerceptron);
     end;
   end;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterWin;
+procedure TForm1.AdjustPerceptronsAfterWin(BestPerceptron: TPerceptron);
 var
   i: integer;
   p: TPerceptron;
@@ -578,9 +583,13 @@ begin
       p.Weight := p.Weight * p.UsageCount;
     end;
   end;
+
+  if (BestPerceptron <> nil) then begin
+    BestPerceptron.Mutate;
+  end;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterLoss;
+procedure TForm1.AdjustPerceptronsAfterLoss(BestPerceptron: TPerceptron);
 var
   i: integer;
   p: TPerceptron;
@@ -590,6 +599,10 @@ begin
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight / p.UsageCount;
     end;
+  end;
+
+  if (BestPerceptron <> nil) then begin
+    BestPerceptron.Mutate;
   end;
 end;
 

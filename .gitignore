@@ -5,6 +5,7 @@ lib/
 *.res
 
 *.json
+!CustomPerceptrons.json
 
 src/PascalPente
 !bin/PascalPente
