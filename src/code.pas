@@ -583,10 +583,6 @@ begin
       p.Weight := p.Weight * p.UsageCount;
     end;
   end;
-
-  if (BestPerceptron <> nil) then begin
-    BestPerceptron.Mutate;
-  end;
 end;
 
 procedure TForm1.AdjustPerceptronsAfterLoss(BestPerceptron: TPerceptron);
