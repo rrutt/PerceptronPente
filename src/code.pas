@@ -4,8 +4,6 @@ unit code;
 
 {$mode objfpc}{$H+}
 
-{$WARN 5024 off : Parameter "$1" not used}
-
 interface
 
 uses
@@ -51,11 +49,11 @@ type
     procedure ButtonWritePerceptronsToFileClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure GameBoardDrawGridMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+      {%H-}Shift: TShiftState; X, Y: Integer);
     procedure GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-      aRect: TRect; aState: TGridDrawState);
-    procedure GameBoardStringGridPrepareCanvas(Sender: TObject; aCol,
-      aRow: Integer; aState: TGridDrawState);
+      aRect: TRect; {%H-}aState: TGridDrawState);
+    procedure GameBoardStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
+      {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
 
   private
     TheBoard: TGameBoard;
@@ -79,9 +77,10 @@ type
     procedure ClearStringGrid;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
-    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestPerceptron: TPerceptron);
-    procedure AdjustPerceptronsAfterWin(BestPerceptron: TPerceptron);
-    procedure AdjustPerceptronsAfterLoss(BestPerceptron: TPerceptron);
+    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
+    procedure AdjustPerceptronsAfterWin;
+    procedure AdjustPerceptronsAfterLoss;
+    function FindLeastUsedPerceptron: TPerceptron;
 
   public
 
@@ -177,7 +176,6 @@ procedure TForm1.GameBoardDrawGridMouseDown(Sender: TObject;
 var
   col: integer;
   row: integer;
-  bestPerceptron: TPerceptron;
 begin
   CurrentPlayerIsHuman := true;
 
@@ -192,8 +190,7 @@ begin
   GameBoardDrawGrid.MouseToCell(X, Y, col, row);
   TheBoard.Cells[col, row] := CurrentPlayer;
 
-  bestPerceptron := nil;
-  AnalyzeMove(col, row, bestPerceptron);
+  AnalyzeMove(col, row);
 end;
 
 procedure TForm1.GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -330,13 +327,13 @@ var
   matchScore: single;
   p: TPerceptron;
   bestCellPerceptron: TPerceptron;
-  bestMatchPerceptron: TPerceptron;
+  bestMovePerceptron: TPerceptron;
   i: integer;
 begin
   bestCol := MIN_COL - 1;
   bestRow := MIN_ROW - 1;
   bestCellScore := NEGATIVE_INFINITY;
-  bestMatchPerceptron := nil;
+  bestMovePerceptron := nil;
 
   for boardCol := MIN_COL to MAX_COL do begin
     for boardRow := MIN_ROW to MAX_COL do begin
@@ -371,7 +368,7 @@ begin
 
         if (bestMatchScore > bestCellScore) then begin
           bestCellScore := bestMatchScore;
-          bestMatchPerceptron := bestCellPerceptron;
+          bestMovePerceptron := bestCellPerceptron;
           bestCol := boardCol;
           bestRow := boardRow;
         end; // if bestMatchScore
@@ -380,10 +377,10 @@ begin
   end; // for boareCol
 
   if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
-    inc(bestMatchPerceptron.UsageCount);
+    inc(bestMovePerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
-    AnalyzeMove(bestCol, bestRow, bestMatchPerceptron);
+    AnalyzeMove(bestCol, bestRow);
     GameBoardDrawGrid.Invalidate;
   end;
 end;
@@ -464,7 +461,7 @@ begin
 end;
 
 //TODO: Pass best move Perceptron to AnalyzeMove procedure. (Pass nil for human player move.)
-procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestPerceptron: TPerceptron);
+procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
 var
   selfPlayer: CellContent;
   otherPlayer: CellContent;
@@ -554,25 +551,25 @@ begin
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
-      AdjustPerceptronsAfterLoss(BestPerceptron);
+      AdjustPerceptronsAfterLoss;
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
-      AdjustPerceptronsAfterWin(BestPerceptron);
+      AdjustPerceptronsAfterWin;
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
-      AdjustPerceptronsAfterLoss(BestPerceptron);
+      AdjustPerceptronsAfterLoss;
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
-      AdjustPerceptronsAfterWin(BestPerceptron);
+      AdjustPerceptronsAfterWin;
     end;
   end;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterWin(BestPerceptron: TPerceptron);
+procedure TForm1.AdjustPerceptronsAfterWin;
 var
   i: integer;
   p: TPerceptron;
@@ -582,10 +579,18 @@ begin
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight * p.UsageCount;
     end;
+
+    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+      p.Mutate;
+    end;
   end;
+
+  p := FindLeastUsedPerceptron;
+  p.RandomizePatterns;
+  p.RandomizeWeights;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterLoss(BestPerceptron: TPerceptron);
+procedure TForm1.AdjustPerceptronsAfterLoss;
 var
   i: integer;
   p: TPerceptron;
@@ -595,11 +600,32 @@ begin
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight / p.UsageCount;
     end;
+
+    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+      p.Mutate;
+    end;
   end;
 
-  if (BestPerceptron <> nil) then begin
-    BestPerceptron.Mutate;
+  p := FindLeastUsedPerceptron;
+  p.RandomizePatterns;
+  p.RandomizeWeights;
+end;
+
+function TForm1.FindLeastUsedPerceptron: TPerceptron;
+var
+  i: integer;
+  p: TPerceptron;
+  leastUsedPerceptron: TPerceptron;
+begin
+  leastUsedPerceptron := Perceptrons[Low(Perceptrons)];
+  for i := Succ(Low(Perceptrons)) to High(Perceptrons) do begin
+    p := Perceptrons [i];
+    if (p.UsageCount < leastUsedPerceptron.UsageCount) then begin
+      leastUsedPerceptron := p;
+    end;
   end;
+
+  result := leastUsedPerceptron;
 end;
 
 end.
