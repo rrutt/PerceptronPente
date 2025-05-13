@@ -10,7 +10,7 @@ uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, ComCtrls, Menus, Grids, Types,
   fpjson,
-  constants, gameboard, jsonfilemanager, perceptron;
+  constants, gameboard, jsonfilemanager, playerperceptrons, perceptron;
 
 //TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
 //TODO: Increase # perceptrons.
@@ -69,8 +69,7 @@ type
     PlayerName: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPenteCount: array[WhitePiece..BlackPiece] of integer;
-
-    Perceptrons: array of TPerceptron;
+    PlayerPerceptrons: array[WhitePiece..BlackPiece] of TPlayerPerceptrons;
 
     JsonManager: TJsonFileManager;
 
@@ -97,6 +96,8 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   p: TPerceptron;
   i: integer;
+  player: CellContent;
+  perceptrons: array of TPerceptron;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
   OpenDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
@@ -122,12 +123,16 @@ begin
   PlayerPenteCount[WhitePiece] := 0;
   PlayerPenteCount[BlackPiece] := 0;
 
-  SetLength(Perceptrons, PERCEPTRON_COUNT);
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := TPerceptron.Create;
-    p.RandomizePatterns;
-    p.RandomizeWeights;
-    Perceptrons[i] := p;
+  for player := WhitePiece to BlackPiece do begin
+    PlayerPerceptrons[player] := TPlayerPerceptrons.Create;
+    SetLength(PlayerPerceptrons[player].Perceptrons, PERCEPTRON_COUNT);
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := TPerceptron.Create;
+      p.RandomizePatterns;
+      p.RandomizeWeights;
+      perceptrons[i] := p;
+    end;
   end;
 
   JsonManager := TJsonFileManager.Create;
@@ -137,6 +142,8 @@ procedure TForm1.ButtonNewGameClick(Sender: TObject);
 var
   i: integer;
   p: TPerceptron;
+  player: CellContent;
+  perceptrons: array of TPerceptron;
 begin
   TheBoard.ClearBoard;
   GameBoardDrawGrid.Invalidate;
@@ -153,10 +160,13 @@ begin
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
-    p.UsageCount := 0;;
-  end;
+  for player := WhitePiece to BlackPiece do begin
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := perceptrons[i];
+      p.UsageCount := 0;;
+    end;
+ end;
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -237,11 +247,16 @@ procedure TForm1.ButtonRandomizePerceptronsClick(Sender: TObject);
 var
   i: integer;
   p: TPerceptron;
+  player: CellContent;
+  perceptrons: array of TPerceptron;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
-    p.RandomizePatterns;
-    p.RandomizeWeights;
+  for player := WhitePiece to BlackPiece do begin
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := perceptrons[i];
+      p.RandomizePatterns;
+      p.RandomizeWeights;
+    end;
   end;
 
   LabelFileMessage.Caption := 'Radomized Perceptrons';
@@ -251,9 +266,12 @@ procedure TForm1.ButtonReadPerceptronsFromFileClick(Sender: TObject);
 var
   filename: string;
   jsonObj: TJSONObject;
+  jsonPlayer: TJSONObject;
   perceptronCount: integer;
   p: TPerceptron;
   i: integer;
+  player: CellContent;
+  perceptrons: array of TPerceptron;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -261,30 +279,28 @@ begin
       LabelFileMessage.Caption := 'File not found: ' + filename;
     end else begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
-      perceptronCount := JsonManager.ParseJsonPerceptronCount(jsonObj);
 
-      if (perceptronCount < Length(Perceptrons)) then begin
-        for i := perceptronCount to High(Perceptrons) do begin
-          p := Perceptrons[i];
-          p.Free;
+      for player := WhitePiece to BlackPiece do begin
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+
+        perceptronCount := JsonManager.ParseJsonPerceptronCount(jsonPlayer);
+        perceptrons := PlayerPerceptrons[player].Perceptrons;
+        if (Length(perceptrons) <> perceptronCount) then begin
+          SetLength(perceptrons, perceptronCount);
         end;
-      end;
 
-      if (Length(Perceptrons) <> perceptronCount) then begin
-        SetLength(Perceptrons, perceptronCount);
-      end;
-
-      for i := Low(Perceptrons) to High(Perceptrons) do begin
-        p := Perceptrons[i];
-        if (p = nil) then begin
-          p := TPerceptron.Create;
-          Perceptrons[i] := p;
-        end else begin
-          p.ClearPatterns;
+        for i := Low(perceptrons) to High(perceptrons) do begin
+          p := perceptrons[i];
+          if (p = nil) then begin
+            p := TPerceptron.Create;
+            perceptrons[i] := p;
+          end else begin
+            p.ClearPatterns;
+          end;
         end;
-      end;
 
-      JsonManager.ParseJsonPerceptrons(jsonObj, Perceptrons);
+        JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
+      end;
 
       LabelFileMessage.Caption := 'Perceptrons read from file ' + filename;
     end;
@@ -300,7 +316,7 @@ var
 begin
   if (SaveDialog1.Execute) then begin
     filename := SaveDialog1.Filename;
-    jsonText := JsonManager.GenerateJsonString(Perceptrons);
+    jsonText := JsonManager.GenerateJsonString(PlayerPerceptrons);
     JsonManager.WriteJsonToFile(filename, jsonText);
     LabelFileMessage.Caption := 'Perceptrons written to file ' + PERCEPTRONS_FILE_NAME;
   end else begin
@@ -326,10 +342,13 @@ var
   bestMatchScore: single;
   matchScore: single;
   p: TPerceptron;
+  perceptrons: array of TPerceptron;
   bestCellPerceptron: TPerceptron;
   bestMovePerceptron: TPerceptron;
   i: integer;
 begin
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
   bestCol := MIN_COL - 1;
   bestRow := MIN_ROW - 1;
   bestCellScore := NEGATIVE_INFINITY;
@@ -350,8 +369,8 @@ begin
         end;
 
         bestMatchScore := 0.0;
-        for i := Low(Perceptrons) to High(Perceptrons) do begin
-          p := Perceptrons[i];
+        for i := Low(perceptrons) to High(perceptrons) do begin
+          p := perceptrons[i];
 
           if (bestCellPerceptron = nil) then begin
             bestCellPerceptron := p;
@@ -573,9 +592,12 @@ procedure TForm1.AdjustPerceptronsAfterWin;
 var
   i: integer;
   p: TPerceptron;
+  perceptrons: array of TPerceptron;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := perceptrons[i];
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight * p.UsageCount;
     end;
@@ -594,9 +616,12 @@ procedure TForm1.AdjustPerceptronsAfterLoss;
 var
   i: integer;
   p: TPerceptron;
+  perceptrons: array of TPerceptron;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := perceptrons[i];
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight / p.UsageCount;
     end;
@@ -616,10 +641,13 @@ var
   i: integer;
   p: TPerceptron;
   leastUsedPerceptron: TPerceptron;
+  perceptrons: array of TPerceptron;
 begin
-  leastUsedPerceptron := Perceptrons[Low(Perceptrons)];
-  for i := Succ(Low(Perceptrons)) to High(Perceptrons) do begin
-    p := Perceptrons [i];
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  leastUsedPerceptron := perceptrons[Low(perceptrons)];
+  for i := Succ(Low(perceptrons)) to High(perceptrons) do begin
+    p := perceptrons[i];
     if (p.UsageCount < leastUsedPerceptron.UsageCount) then begin
       leastUsedPerceptron := p;
     end;

@@ -42,7 +42,7 @@ const
   PERCEPTRONS_FILE_NAME = 'Perceptrons.json';
 
 type
-  CellContent = (EmptyCell, WhitePiece, BlackPiece, CapturedCell);
+  CellContent = (WhitePiece, BlackPiece, EmptyCell, CapturedCell);
   PatternMatchCell = (DoNotCare, MatchEmpty, MatchSelf, MatchOpponent);
 
 implementation
