@@ -10,11 +10,8 @@ uses
 
 type
   TPerceptron = class
-
   private
-
   public
-    //TODO: "Mutate" Perceptron weights after wins & losses for non-human player based on UsageCount;
     Weight: single;
     UsageCount: integer;
 
@@ -26,7 +23,6 @@ type
     procedure RandomizePatterns;
     procedure RandomizeWeights;
     procedure Mutate;
-
   end;
 
   TPerceptronArray = array of TPerceptron;

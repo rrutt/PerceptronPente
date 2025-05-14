@@ -76,8 +76,8 @@ type
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
-    procedure AdjustPerceptronsAfterWin;
-    procedure AdjustPerceptronsAfterLoss;
+    procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
+    procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
     function FindLeastUsedPerceptron: TPerceptron;
 
   public
@@ -97,6 +97,7 @@ var
   i: integer;
   player: CellContent;
   perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
   OpenDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
@@ -123,15 +124,18 @@ begin
   PlayerPenteCount[BlackPiece] := 0;
 
   for player := WhitePiece to BlackPiece do begin
-    PlayerPerceptrons[player] := TPlayerPerceptrons.Create;
-    SetLength(PlayerPerceptrons[player].Perceptrons, PERCEPTRON_COUNT);
-    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    pp := TPlayerPerceptrons.Create;
+    pp.Wins := 0;
+    pp.Losses := 0;
+    SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
+    perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := TPerceptron.Create;
       p.RandomizePatterns;
       p.RandomizeWeights;
       perceptrons[i] := p;
     end;
+    PlayerPerceptrons[player] := pp;
   end;
 
   JsonManager := TJsonFileManager.Create;
@@ -185,6 +189,7 @@ begin
   repeat
     MoveForPlayer;
     GameBoardDrawGrid.Repaint;
+    GameBoardStringGrid.Repaint;
     Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
 
     if (CurrentPlayer = BlackPiece) then begin
@@ -297,6 +302,7 @@ var
   jsonPlayer: TJSONObject;
   player: CellContent;
   perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -306,9 +312,12 @@ begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
 
       for player := WhitePiece to BlackPiece do begin
-        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+        pp := PlayerPerceptrons[player];
 
-        perceptrons := PlayerPerceptrons[player].Perceptrons;
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+        JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+
+        perceptrons := pp.Perceptrons;
         JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
       end;
 
@@ -586,31 +595,35 @@ begin
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end;
   end;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterWin;
+procedure TForm1.AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
 var
   i: integer;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+  Inc(Player.Wins);
+
+  perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
@@ -628,13 +641,15 @@ begin
   p.RandomizeWeights;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterLoss;
+procedure TForm1.AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
 var
   i: integer;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+  Inc(Player.Losses);
+
+  perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
