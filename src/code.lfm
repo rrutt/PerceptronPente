@@ -36,7 +36,7 @@ object Form1: TForm1
     Height = 15
     Top = 16
     Width = 133
-    Caption = 'Version 1.0.0+20250512'
+    Caption = 'Version 1.0.0+20250514'
     Color = clWhite
     ParentColor = False
     Transparent = False
@@ -54,7 +54,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 3
+    TabOrder = 7
     OnDrawCell = GameBoardDrawGridDrawCell
     OnMouseDown = GameBoardDrawGridMouseDown
   end
@@ -69,7 +69,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 4
+    TabOrder = 8
     OnPrepareCanvas = GameBoardStringGridPrepareCanvas
   end
   object LabelGameWinnerMessage: TLabel
@@ -152,7 +152,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 3
     OnClick = ButtonWritePerceptronsToFileClick
   end
   object ButtonReadPerceptronsFromFile: TButton
@@ -169,7 +169,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 6
+    TabOrder = 4
     OnClick = ButtonReadPerceptronsFromFileClick
   end
   object LabelFileMessage: TLabel
@@ -201,8 +201,25 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 5
     OnClick = ButtonRandomizePerceptronsClick
+  end
+  object ButtonAutoPlay: TButton
+    Left = 208
+    Height = 38
+    Top = 608
+    Width = 145
+    Caption = 'Auto Play'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -27
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 6
+    OnClick = ButtonAutoPlayClick
   end
   object OpenDialog1: TOpenDialog
     Left = 1064

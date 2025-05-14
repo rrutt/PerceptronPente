@@ -1,8 +1,10 @@
-# Pascal Pente
+# Perceptron Pente
 
-_Version 1.0.0+20250512  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.0+20250514  ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **Pente** board game that uses neural network artificial intelligence pattern matching.
+
+_(More details to follow...)_
 
 ## About the Software
 

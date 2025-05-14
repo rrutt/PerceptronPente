@@ -2,7 +2,7 @@
 
 // https://medium.com/@marcusfernstrm/freepascal-and-json-337c04cad489
 // https://www.freepascal.org/docs-html/current/fcl/fpjson/index.html
-// https://www.freepascal.org/docs-html/fcl/fpjson/tjsondata.html
+// https://www.freepascal.org/docs-html/fcl/fpjson/tJsonObj.html
 // https://wiki.freepascal.org/TFileStream
 
 unit jsonfilemanager;
@@ -14,16 +14,16 @@ interface
 uses
   Classes, SysUtils,
   fpjson,
-  constants, perceptron;
+  constants, playerperceptrons, perceptron;
 
 type
   TJsonFileManager = class
   private
   public
     function ReadJsonFromFile(const FileName: string): TJSONObject;
-    function ParseJsonPerceptronCount(const JsonObj: TJSONObject): integer;
-    procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: array of TPerceptron);
-    function GenerateJsonString(const Perceptrons: array of TPerceptron): string;
+    procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
+    function ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJsonObject;
+    function GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
     procedure WriteJsonToFile(const FileName: string; const JsonText: string);
   end;
 
@@ -68,22 +68,14 @@ begin
   end;
 end;
 
-function TJsonFileManager.ParseJsonPerceptronCount(const JsonObj: TJSONObject): integer;
-var
-  perceptronCount: integer;
-begin
-  perceptronCount := JsonObj.FindPath('Count').AsInteger;
-
-  result := perceptronCount;
-end;
-
-procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: array of TPerceptron);
+procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
 var
   i: integer;
   p: TPerceptron;
   jsonPerceptrons: TJSONArray;
   jsonPerceptron: TJSONObject;
   jsonPerceptronEnum: TJSONEnum;
+  perceptronCount: integer;
   jsonCells: TJSONArray;
   jsonCell: TJSONObject;
   jsonCellEnum: TJSONEnum;
@@ -93,6 +85,20 @@ var
   weight: single;
 begin
   jsonPerceptrons := TJSONArray(JsonObj.FindPath('Perceptrons'));
+  perceptronCount := jsonPerceptrons.Count;
+  if (Length(Perceptrons) <> perceptronCount) then begin
+    SetLength(Perceptrons, perceptronCount);
+  end;
+
+  for i := Low(Perceptrons) to High(Perceptrons) do begin
+    p := Perceptrons[i];
+    if (p = nil) then begin
+      p := TPerceptron.Create;
+      Perceptrons[i] := p;
+    end else begin
+      p.ClearPatterns;
+    end;
+  end;
 
   i := Low(Perceptrons);
   for jsonPerceptronEnum in jsonPerceptrons do begin
@@ -132,9 +138,21 @@ begin
   end;
 end;
 
-function TJsonFileManager.GenerateJsonString(const Perceptrons: array of TPerceptron): string;
+function TJsonFileManager.ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJSONObject;
+var
+  playerName: string;
+  jsonPlayer: TJSONObject;
+begin
+  WriteStr(playerName, Player);
+  jsonPlayer := TJSONObject(JsonObj.FindPath(playerName));
+
+  result := jsonPlayer;
+end;
+
+function TJsonFileManager.GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
 var
   json: TJSONObject;
+  jsonPlayer: TJSONObject;
   jsonPerceptrons: TJSONArray;
   jsonPerceptron: TJSONObject;
   jsonCells: TJSONArray;
@@ -145,37 +163,47 @@ var
   row: integer;
   jsonText: string;
   match: string;
+  player: CellContent;
+  playerName: string;
+  perceptrons: array of TPerceptron;
 begin
   json := TJSONObject.Create;
-  jsonPerceptrons := TJSONArray.Create;
 
-  json.Add('Count', Length(Perceptrons));
-  json.Add('Perceptrons', jsonPerceptrons);
+  for player := WhitePiece to BlackPiece do begin
+    jsonPlayer := TJSONObject.Create;
+    WriteStr(playerName, player);
+    json.Add(playerName, jsonPlayer);
 
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
-    jsonPerceptron := TJSONObject.Create;
+    jsonPerceptrons := TJSONArray.Create;
+    perceptrons := PlayerPerceptrons[Ord(player)].Perceptrons;
 
-    jsonPerceptron.Add('Weight', p.Weight);
+    jsonPlayer.Add('Perceptrons', jsonPerceptrons);
 
-    jsonCells := TJSONArray.Create;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := perceptrons[i];
+      jsonPerceptron := TJSONObject.Create;
 
-    for col := MIN_COL to MAX_COL do begin
-      for row := MIN_ROW to MAX_ROW do begin
-        if (p.MatchCells[col, row] <> DoNotCare) then begin
-          jsonCell := TJSONObject.Create;
-          jsonCell.Add('Col', col);
-          jsonCell.Add('Row', row);
-          WriteStr(match, p.MatchCells[col, row]);
-          jsonCell.Add('Match', match);
-          jsonCell.Add('Weight', p.MatchWeights[col, row]);
-          jsonCells.Add(jsonCell);
+      jsonPerceptron.Add('Weight', p.Weight);
+
+      jsonCells := TJSONArray.Create;
+
+      for col := MIN_COL to MAX_COL do begin
+        for row := MIN_ROW to MAX_ROW do begin
+          if (p.MatchCells[col, row] <> DoNotCare) then begin
+            jsonCell := TJSONObject.Create;
+            jsonCell.Add('Col', col);
+            jsonCell.Add('Row', row);
+            WriteStr(match, p.MatchCells[col, row]);
+            jsonCell.Add('Match', match);
+            jsonCell.Add('Weight', p.MatchWeights[col, row]);
+            jsonCells.Add(jsonCell);
+          end;
         end;
       end;
-    end;
 
-    jsonPerceptron.Add('Cells', jsonCells);
-    jsonPerceptrons.Add(jsonPerceptron);
+      jsonPerceptron.Add('Cells', jsonCells);
+      jsonPerceptrons.Add(jsonPerceptron);
+    end;
   end;
 
   jsonText := json.FormatJSON;

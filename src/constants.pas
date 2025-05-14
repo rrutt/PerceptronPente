@@ -17,14 +17,16 @@ const
   MAX_ROW = GAME_BOARD_SIZE - 1;
 
   MIN_PATTERN_INDEX = 0;
-  MIDDLE_PATTERN_INDEX = 4;
-  MAX_PATTERN_INDEX = 8;
+  MIDDLE_PATTERN_INDEX = 5;
+  MAX_PATTERN_INDEX = 10;
 
   PERCEPTRON_COUNT = 100;
-  PERCEPTRON_DENSITY = 0.25;
+  PERCEPTRON_DENSITY = 0.1;
+  PERCEPTRON_MUTATION_RATE = 0.01;
 
   MATCH_EMPTY_DENSITY = 0.5;
-  MATCH_SELF_DENSITY = 0.25;
+  MATCH_SELF_DENSITY = 0.5;
+  MATCH_OPPONENT_DENSITY = 0.5;
 
   MIN_DIRECTION = 1;
   HALF_DIRECTION = 4;
@@ -39,8 +41,10 @@ const
 
   PERCEPTRONS_FILE_NAME = 'Perceptrons.json';
 
+  AUTO_PLAY_SLEEP_MILLISECONDS = 250;
+
 type
-  CellContent = (EmptyCell, WhitePiece, BlackPiece, CapturedCell);
+  CellContent = (WhitePiece, BlackPiece, EmptyCell, CapturedCell);
   PatternMatchCell = (DoNotCare, MatchEmpty, MatchSelf, MatchOpponent);
 
 implementation

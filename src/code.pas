@@ -4,32 +4,26 @@ unit code;
 
 {$mode objfpc}{$H+}
 
-{$WARN 5024 off : Parameter "$1" not used}
-
 interface
 
 uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, ComCtrls, Menus, Grids, Types,
   fpjson,
-  constants, gameboard, jsonfilemanager, perceptron;
+  constants, gameboard, jsonfilemanager, playerperceptrons, perceptron;
 
 //TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
-//TODO: Increase # perceptrons.
-//TODO: After AI game win, randomly mutate least scored perceptron.
-//TODO: After AI game loss, randomly mutate greatest scored perceptron.
-//TODO: Expand grids to 19x19.
+//TODO: Manually create Perceptrons set file(s).
+//TODO: ??? Expand grids to 19x19.
 //TODO: ??? Serialize game play moves to file using JSON.
 //TODO: ??? Support "instant replay" from current or past serialized play move file.
-//TODO: Setup dual AI auto-play learning environment.
-//TODO: Add option to "partially mutate" Perceprtrons set.
-//TODO: Manually create Perceptrons set file(s).
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
+    ButtonAutoPlay: TButton;
     ButtonRandomizePerceptrons: TButton;
     ButtonWritePerceptronsToFile: TButton;
     ButtonPlayWhite: TButton;
@@ -45,6 +39,7 @@ type
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
 
+    procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -53,11 +48,11 @@ type
     procedure ButtonWritePerceptronsToFileClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure GameBoardDrawGridMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+      {%H-}Shift: TShiftState; X, Y: Integer);
     procedure GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-      aRect: TRect; aState: TGridDrawState);
-    procedure GameBoardStringGridPrepareCanvas(Sender: TObject; aCol,
-      aRow: Integer; aState: TGridDrawState);
+      aRect: TRect; {%H-}aState: TGridDrawState);
+    procedure GameBoardStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
+      {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
 
   private
     TheBoard: TGameBoard;
@@ -73,8 +68,7 @@ type
     PlayerName: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPenteCount: array[WhitePiece..BlackPiece] of integer;
-
-    Perceptrons: array of TPerceptron;
+    PlayerPerceptrons: array[WhitePiece..BlackPiece] of TPlayerPerceptrons;
 
     JsonManager: TJsonFileManager;
 
@@ -84,6 +78,7 @@ type
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
     procedure AdjustPerceptronsAfterWin;
     procedure AdjustPerceptronsAfterLoss;
+    function FindLeastUsedPerceptron: TPerceptron;
 
   public
 
@@ -100,6 +95,8 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   p: TPerceptron;
   i: integer;
+  player: CellContent;
+  perceptrons: TPerceptronArray;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
   OpenDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
@@ -125,12 +122,16 @@ begin
   PlayerPenteCount[WhitePiece] := 0;
   PlayerPenteCount[BlackPiece] := 0;
 
-  SetLength(Perceptrons, PERCEPTRON_COUNT);
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := TPerceptron.Create;
-    p.RandomizePatterns;
-    p.RandomizeWeights;
-    Perceptrons[i] := p;
+  for player := WhitePiece to BlackPiece do begin
+    PlayerPerceptrons[player] := TPlayerPerceptrons.Create;
+    SetLength(PlayerPerceptrons[player].Perceptrons, PERCEPTRON_COUNT);
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := TPerceptron.Create;
+      p.RandomizePatterns;
+      p.RandomizeWeights;
+      perceptrons[i] := p;
+    end;
   end;
 
   JsonManager := TJsonFileManager.Create;
@@ -140,6 +141,8 @@ procedure TForm1.ButtonNewGameClick(Sender: TObject);
 var
   i: integer;
   p: TPerceptron;
+  player: CellContent;
+  perceptrons: TPerceptronArray;
 begin
   TheBoard.ClearBoard;
   GameBoardDrawGrid.Invalidate;
@@ -156,10 +159,42 @@ begin
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
-    p.UsageCount := 0;;
+  for player := WhitePiece to BlackPiece do begin
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := perceptrons[i];
+      p.UsageCount := 0;;
+    end;
+ end;
+end;
+
+procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+begin
+  ButtonNewGameClick(Sender);
+  //GameOver := false;
+  //CurrentPlayerIsHuman := false;
+
+  if (Random < 0.5) then begin
+    CurrentPlayer := WhitePiece;
+    OpponentPlayer := BlackPiece;
+  end else begin
+    CurrentPlayer := BlackPiece;
+    OpponentPlayer := WhitePiece;
   end;
+
+  repeat
+    MoveForPlayer;
+    GameBoardDrawGrid.Repaint;
+    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+
+    if (CurrentPlayer = BlackPiece) then begin
+      CurrentPlayer := WhitePiece;
+      OpponentPlayer := BlackPiece;
+    end else begin
+      CurrentPlayer := BlackPiece;
+      OpponentPlayer := WhitePiece;
+    end;
+  until (GameOver);
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -192,6 +227,7 @@ begin
 
   GameBoardDrawGrid.MouseToCell(X, Y, col, row);
   TheBoard.Cells[col, row] := CurrentPlayer;
+
   AnalyzeMove(col, row);
 end;
 
@@ -239,11 +275,16 @@ procedure TForm1.ButtonRandomizePerceptronsClick(Sender: TObject);
 var
   i: integer;
   p: TPerceptron;
+  player: CellContent;
+  perceptrons: TPerceptronArray;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
-    p.RandomizePatterns;
-    p.RandomizeWeights;
+  for player := WhitePiece to BlackPiece do begin
+    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    for i := Low(perceptrons) to High(perceptrons) do begin
+      p := perceptrons[i];
+      p.RandomizePatterns;
+      p.RandomizeWeights;
+    end;
   end;
 
   LabelFileMessage.Caption := 'Radomized Perceptrons';
@@ -253,9 +294,9 @@ procedure TForm1.ButtonReadPerceptronsFromFileClick(Sender: TObject);
 var
   filename: string;
   jsonObj: TJSONObject;
-  perceptronCount: integer;
-  p: TPerceptron;
-  i: integer;
+  jsonPlayer: TJSONObject;
+  player: CellContent;
+  perceptrons: TPerceptronArray;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -263,30 +304,13 @@ begin
       LabelFileMessage.Caption := 'File not found: ' + filename;
     end else begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
-      perceptronCount := JsonManager.ParseJsonPerceptronCount(jsonObj);
 
-      if (perceptronCount < Length(Perceptrons)) then begin
-        for i := perceptronCount to High(Perceptrons) do begin
-          p := Perceptrons[i];
-          p.Free;
-        end;
+      for player := WhitePiece to BlackPiece do begin
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+
+        perceptrons := PlayerPerceptrons[player].Perceptrons;
+        JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
       end;
-
-      if (Length(Perceptrons) <> perceptronCount) then begin
-        SetLength(Perceptrons, perceptronCount);
-      end;
-
-      for i := Low(Perceptrons) to High(Perceptrons) do begin
-        p := Perceptrons[i];
-        if (p = nil) then begin
-          p := TPerceptron.Create;
-          Perceptrons[i] := p;
-        end else begin
-          p.ClearPatterns;
-        end;
-      end;
-
-      JsonManager.ParseJsonPerceptrons(jsonObj, Perceptrons);
 
       LabelFileMessage.Caption := 'Perceptrons read from file ' + filename;
     end;
@@ -302,7 +326,7 @@ var
 begin
   if (SaveDialog1.Execute) then begin
     filename := SaveDialog1.Filename;
-    jsonText := JsonManager.GenerateJsonString(Perceptrons);
+    jsonText := JsonManager.GenerateJsonString(PlayerPerceptrons);
     JsonManager.WriteJsonToFile(filename, jsonText);
     LabelFileMessage.Caption := 'Perceptrons written to file ' + PERCEPTRONS_FILE_NAME;
   end else begin
@@ -328,18 +352,28 @@ var
   bestMatchScore: single;
   matchScore: single;
   p: TPerceptron;
-  bestPerceptron: TPerceptron;
+  perceptrons: TPerceptronArray;
+  bestCellPerceptron: TPerceptron;
+  bestMovePerceptron: TPerceptron;
   i: integer;
+  emptyCellCount: integer;
 begin
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
   bestCol := MIN_COL - 1;
   bestRow := MIN_ROW - 1;
   bestCellScore := NEGATIVE_INFINITY;
-  bestPerceptron := nil;
+  bestMovePerceptron := nil;
+  emptyCellCount := 0;
 
   for boardCol := MIN_COL to MAX_COL do begin
     for boardRow := MIN_ROW to MAX_COL do begin
+      bestCellPerceptron := nil;
+
       GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
       if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
+        Inc(emptyCellCount);
+
         // Guarantee a move will be made if no Perceptron finds a positive match score.
         if (bestCol < MIN_COL) then begin
           bestCol := boardCol;
@@ -349,17 +383,17 @@ begin
         end;
 
         bestMatchScore := 0.0;
-        for i := Low(Perceptrons) to High(Perceptrons) do begin
-          p := Perceptrons[i];
+        for i := Low(perceptrons) to High(perceptrons) do begin
+          p := perceptrons[i];
 
-          if (bestPerceptron = nil) then begin
-            bestPerceptron := p;
+          if (bestCellPerceptron = nil) then begin
+            bestCellPerceptron := p;
           end;
 
           matchScore := ComputeMatchScore(p, boardCol, boardRow);
           if (matchScore > bestMatchScore) then begin
             bestMatchScore := matchScore;
-            bestPerceptron := p;
+            bestCellPerceptron := p;
           end;
         end; // for i
 
@@ -367,6 +401,7 @@ begin
 
         if (bestMatchScore > bestCellScore) then begin
           bestCellScore := bestMatchScore;
+          bestMovePerceptron := bestCellPerceptron;
           bestCol := boardCol;
           bestRow := boardRow;
         end; // if bestMatchScore
@@ -374,8 +409,11 @@ begin
     end; // for boardRow
   end; // for boareCol
 
-  if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
-    inc(bestPerceptron.UsageCount);
+  if (emptyCellCount = 0) then begin
+    GameOver := true;
+    LabelGameWinnerMessage.Caption := 'This game is a draw.';
+  end else if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
+    inc(bestMovePerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
     AnalyzeMove(bestCol, bestRow);
@@ -458,7 +496,6 @@ begin
   result := matchScore;
 end;
 
-//TODO: Pass best move Perceptron to AnalyzeMove procedure. (Pass nil for human player move.)
 procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
 var
   selfPlayer: CellContent;
@@ -571,26 +608,68 @@ procedure TForm1.AdjustPerceptronsAfterWin;
 var
   i: integer;
   p: TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := perceptrons[i];
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight * p.UsageCount;
     end;
+
+    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+      p.Mutate;
+    end;
   end;
+
+  p := FindLeastUsedPerceptron;
+  p.RandomizePatterns;
+  p.RandomizeWeights;
 end;
 
 procedure TForm1.AdjustPerceptronsAfterLoss;
 var
   i: integer;
   p: TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
-  for i := Low(Perceptrons) to High(Perceptrons) do begin
-    p := Perceptrons[i];
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := perceptrons[i];
     if (p.UsageCount > 0) then begin
       p.Weight := p.Weight / p.UsageCount;
     end;
+
+    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+      p.Mutate;
+    end;
   end;
+
+  p := FindLeastUsedPerceptron;
+  p.RandomizePatterns;
+  p.RandomizeWeights;
+end;
+
+function TForm1.FindLeastUsedPerceptron: TPerceptron;
+var
+  i: integer;
+  p: TPerceptron;
+  leastUsedPerceptron: TPerceptron;
+  perceptrons: TPerceptronArray;
+begin
+  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+
+  leastUsedPerceptron := perceptrons[Low(perceptrons)];
+  for i := Succ(Low(perceptrons)) to High(perceptrons) do begin
+    p := perceptrons[i];
+    if (p.UsageCount < leastUsedPerceptron.UsageCount) then begin
+      leastUsedPerceptron := p;
+    end;
+  end;
+
+  result := leastUsedPerceptron;
 end;
 
 end.
