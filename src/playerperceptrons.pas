@@ -10,15 +10,12 @@ uses
 
 type
   TPlayerPerceptrons = class
-
   private
-
   public
+    Wins: integer;
+    Losses: integer;
     Perceptrons: TPerceptronArray;
-
   end;
-
-
 
 implementation
 

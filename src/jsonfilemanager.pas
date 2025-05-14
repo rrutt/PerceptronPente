@@ -21,6 +21,7 @@ type
   private
   public
     function ReadJsonFromFile(const FileName: string): TJSONObject;
+    procedure ParsePlayerWinsAndLosses(const JsonObj: TJSONObject; PlayerPerceptrons: TPlayerPerceptrons);
     procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
     function ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJsonObject;
     function GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
@@ -66,6 +67,12 @@ begin
   finally
     strm.Free;
   end;
+end;
+
+procedure TJsonFileManager.ParsePlayerWinsAndLosses(const JsonObj: TJSONObject; PlayerPerceptrons: TPlayerPerceptrons);
+begin
+  PlayerPerceptrons.Wins := JsonObj.FindPath('Wins').AsInteger;
+  PlayerPerceptrons.Losses := JsonObj.FindPath('Losses').AsInteger;
 end;
 
 procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
@@ -166,6 +173,7 @@ var
   player: CellContent;
   playerName: string;
   perceptrons: array of TPerceptron;
+  pp: TPlayerPerceptrons;
 begin
   json := TJSONObject.Create;
 
@@ -174,8 +182,12 @@ begin
     WriteStr(playerName, player);
     json.Add(playerName, jsonPlayer);
 
+    pp := PlayerPerceptrons[Ord(player)];
+    jsonPlayer.Add('Wins', pp.Wins);
+    jsonPlayer.Add('Losses', pp.Losses);
+
     jsonPerceptrons := TJSONArray.Create;
-    perceptrons := PlayerPerceptrons[Ord(player)].Perceptrons;
+    perceptrons := pp.Perceptrons;
 
     jsonPlayer.Add('Perceptrons', jsonPerceptrons);
 

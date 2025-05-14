@@ -75,9 +75,9 @@ type
     procedure ClearStringGrid;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
-    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
-    procedure AdjustPerceptronsAfterWin;
-    procedure AdjustPerceptronsAfterLoss;
+    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
+    procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
+    procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
     function FindLeastUsedPerceptron: TPerceptron;
 
   public
@@ -97,6 +97,7 @@ var
   i: integer;
   player: CellContent;
   perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
   OpenDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
@@ -123,15 +124,18 @@ begin
   PlayerPenteCount[BlackPiece] := 0;
 
   for player := WhitePiece to BlackPiece do begin
-    PlayerPerceptrons[player] := TPlayerPerceptrons.Create;
-    SetLength(PlayerPerceptrons[player].Perceptrons, PERCEPTRON_COUNT);
-    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    pp := TPlayerPerceptrons.Create;
+    pp.Wins := 0;
+    pp.Losses := 0;
+    SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
+    perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := TPerceptron.Create;
       p.RandomizePatterns;
       p.RandomizeWeights;
       perceptrons[i] := p;
     end;
+    PlayerPerceptrons[player] := pp;
   end;
 
   JsonManager := TJsonFileManager.Create;
@@ -185,6 +189,7 @@ begin
   repeat
     MoveForPlayer;
     GameBoardDrawGrid.Repaint;
+    GameBoardStringGrid.Repaint;
     Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
 
     if (CurrentPlayer = BlackPiece) then begin
@@ -228,7 +233,7 @@ begin
   GameBoardDrawGrid.MouseToCell(X, Y, col, row);
   TheBoard.Cells[col, row] := CurrentPlayer;
 
-  AnalyzeMove(col, row);
+  AnalyzeMove(col, row, nil);
 end;
 
 procedure TForm1.GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -297,6 +302,7 @@ var
   jsonPlayer: TJSONObject;
   player: CellContent;
   perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -306,9 +312,12 @@ begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
 
       for player := WhitePiece to BlackPiece do begin
-        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+        pp := PlayerPerceptrons[player];
 
-        perceptrons := PlayerPerceptrons[player].Perceptrons;
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
+        JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+
+        perceptrons := pp.Perceptrons;
         JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
       end;
 
@@ -416,7 +425,7 @@ begin
     inc(bestMovePerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
-    AnalyzeMove(bestCol, bestRow);
+    AnalyzeMove(bestCol, bestRow, bestMovePerceptron);
     GameBoardDrawGrid.Invalidate;
   end;
 end;
@@ -491,12 +500,10 @@ begin
     end; // for patternCol
   end; // for reflectionCount
 
-  //matchScore := Random;  //TODO: Remove Random match score.
-
   result := matchScore;
 end;
 
-procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
+procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
 var
   selfPlayer: CellContent;
   otherPlayer: CellContent;
@@ -539,8 +546,12 @@ begin
         if (otherNeighborCount = 0) then begin
           inc(selfNeighborCount[direction]);
           if ((selfNeighborCount[direction] + 1) >= PENTE_PIECE_COUNT) then begin
-            //TODO: Increase weight of Perceptron that triggered Pente.
-            inc(PlayerPenteCount[CurrentPlayer]);
+            if (BestMovePerceptron <> nil) then begin
+              BestMovePerceptron.Weight := BestMovePerceptron.Weight * PENTE_WEIGHT_FACTOR;
+            end;
+
+            Inc(PlayerPenteCount[CurrentPlayer]);
+
             GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Pente ' + IntToStr(PlayerPenteCount[CurrentPlayer]);
             whileLooping := false;
           end else if (direction > HALF_DIRECTION) then begin
@@ -554,8 +565,12 @@ begin
         end else if (otherNeighborCount = 1) then begin
           whileLooping := false;
         end else if (otherNeighborCount = CAPTURE_PIECE_COUNT) then begin
-          //TODO: Increase weight of Perceptron that triggered Capture.
-          inc(PlayerCaptureCount[CurrentPlayer]);
+          if (BestMovePerceptron <> nil) then begin
+            BestMovePerceptron.Weight := BestMovePerceptron.Weight * CAPTURE_WEIGHT_FACTOR;
+          end;
+
+          Inc(PlayerCaptureCount[CurrentPlayer]);
+
           GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Capture ' + IntToStr(PlayerCaptureCount[CurrentPlayer]);;
           for i := 1 to CAPTURE_PIECE_COUNT do begin;
             TheBoard.Cells[MoveCol + (offsetCol * (offsetIndex - i)), MoveRow + (offsetRow * (offsetIndex - i))] := CapturedCell;
@@ -586,31 +601,35 @@ begin
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
-      AdjustPerceptronsAfterLoss;
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
-      AdjustPerceptronsAfterWin;
+      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
+      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
     end;
   end;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterWin;
+procedure TForm1.AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
 var
   i: integer;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+  Inc(Player.Wins);
+
+  perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
@@ -628,13 +647,15 @@ begin
   p.RandomizeWeights;
 end;
 
-procedure TForm1.AdjustPerceptronsAfterLoss;
+procedure TForm1.AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
 var
   i: integer;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
+  Inc(Player.Losses);
+
+  perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];

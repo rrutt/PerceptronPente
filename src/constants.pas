@@ -43,6 +43,9 @@ const
 
   AUTO_PLAY_SLEEP_MILLISECONDS = 250;
 
+  PENTE_WEIGHT_FACTOR = 2.0;
+  CAPTURE_WEIGHT_FACTOR = 1.25;
+
 type
   CellContent = (WhitePiece, BlackPiece, EmptyCell, CapturedCell);
   PatternMatchCell = (DoNotCare, MatchEmpty, MatchSelf, MatchOpponent);
