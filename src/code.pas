@@ -75,7 +75,7 @@ type
     procedure ClearStringGrid;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
-    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
+    procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
     procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
     procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
     function FindLeastUsedPerceptron: TPerceptron;
@@ -233,7 +233,7 @@ begin
   GameBoardDrawGrid.MouseToCell(X, Y, col, row);
   TheBoard.Cells[col, row] := CurrentPlayer;
 
-  AnalyzeMove(col, row);
+  AnalyzeMove(col, row, nil);
 end;
 
 procedure TForm1.GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
@@ -425,7 +425,7 @@ begin
     inc(bestMovePerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
-    AnalyzeMove(bestCol, bestRow);
+    AnalyzeMove(bestCol, bestRow, bestMovePerceptron);
     GameBoardDrawGrid.Invalidate;
   end;
 end;
@@ -500,12 +500,10 @@ begin
     end; // for patternCol
   end; // for reflectionCount
 
-  //matchScore := Random;  //TODO: Remove Random match score.
-
   result := matchScore;
 end;
 
-procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
+procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
 var
   selfPlayer: CellContent;
   otherPlayer: CellContent;
@@ -548,8 +546,12 @@ begin
         if (otherNeighborCount = 0) then begin
           inc(selfNeighborCount[direction]);
           if ((selfNeighborCount[direction] + 1) >= PENTE_PIECE_COUNT) then begin
-            //TODO: Increase weight of Perceptron that triggered Pente.
-            inc(PlayerPenteCount[CurrentPlayer]);
+            if (BestMovePerceptron <> nil) then begin
+              BestMovePerceptron.Weight := BestMovePerceptron.Weight * PENTE_WEIGHT_FACTOR;
+            end;
+
+            Inc(PlayerPenteCount[CurrentPlayer]);
+
             GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Pente ' + IntToStr(PlayerPenteCount[CurrentPlayer]);
             whileLooping := false;
           end else if (direction > HALF_DIRECTION) then begin
@@ -563,8 +565,12 @@ begin
         end else if (otherNeighborCount = 1) then begin
           whileLooping := false;
         end else if (otherNeighborCount = CAPTURE_PIECE_COUNT) then begin
-          //TODO: Increase weight of Perceptron that triggered Capture.
-          inc(PlayerCaptureCount[CurrentPlayer]);
+          if (BestMovePerceptron <> nil) then begin
+            BestMovePerceptron.Weight := BestMovePerceptron.Weight * CAPTURE_WEIGHT_FACTOR;
+          end;
+
+          Inc(PlayerCaptureCount[CurrentPlayer]);
+
           GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Capture ' + IntToStr(PlayerCaptureCount[CurrentPlayer]);;
           for i := 1 to CAPTURE_PIECE_COUNT do begin;
             TheBoard.Cells[MoveCol + (offsetCol * (offsetIndex - i)), MoveRow + (offsetRow * (offsetIndex - i))] := CapturedCell;
