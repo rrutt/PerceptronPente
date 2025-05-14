@@ -21,8 +21,7 @@ type
   private
   public
     function ReadJsonFromFile(const FileName: string): TJSONObject;
-    function ParseJsonPerceptronCount(const JsonObj: TJSONObject): integer;
-    procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: array of TPerceptron);
+    procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
     function ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJsonObject;
     function GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
     procedure WriteJsonToFile(const FileName: string; const JsonText: string);
@@ -69,22 +68,14 @@ begin
   end;
 end;
 
-function TJsonFileManager.ParseJsonPerceptronCount(const JsonObj: TJSONObject): integer;
-var
-  perceptronCount: integer;
-begin
-  perceptronCount := JsonObj.FindPath('Count').AsInteger;
-
-  result := perceptronCount;
-end;
-
-procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: array of TPerceptron);
+procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
 var
   i: integer;
   p: TPerceptron;
   jsonPerceptrons: TJSONArray;
   jsonPerceptron: TJSONObject;
   jsonPerceptronEnum: TJSONEnum;
+  perceptronCount: integer;
   jsonCells: TJSONArray;
   jsonCell: TJSONObject;
   jsonCellEnum: TJSONEnum;
@@ -94,6 +85,20 @@ var
   weight: single;
 begin
   jsonPerceptrons := TJSONArray(JsonObj.FindPath('Perceptrons'));
+  perceptronCount := jsonPerceptrons.Count;
+  if (Length(Perceptrons) <> perceptronCount) then begin
+    SetLength(Perceptrons, perceptronCount);
+  end;
+
+  for i := Low(Perceptrons) to High(Perceptrons) do begin
+    p := Perceptrons[i];
+    if (p = nil) then begin
+      p := TPerceptron.Create;
+      Perceptrons[i] := p;
+    end else begin
+      p.ClearPatterns;
+    end;
+  end;
 
   i := Low(Perceptrons);
   for jsonPerceptronEnum in jsonPerceptrons do begin
@@ -172,7 +177,6 @@ begin
     jsonPerceptrons := TJSONArray.Create;
     perceptrons := PlayerPerceptrons[Ord(player)].Perceptrons;
 
-    jsonPlayer.Add('Count', Length(perceptrons));
     jsonPlayer.Add('Perceptrons', jsonPerceptrons);
 
     for i := Low(perceptrons) to High(perceptrons) do begin

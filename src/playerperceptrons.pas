@@ -14,9 +14,11 @@ type
   private
 
   public
-    Perceptrons: array of TPerceptron;
+    Perceptrons: TPerceptronArray;
 
   end;
+
+
 
 implementation
 

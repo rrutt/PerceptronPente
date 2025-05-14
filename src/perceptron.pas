@@ -29,6 +29,8 @@ type
 
   end;
 
+  TPerceptronArray = array of TPerceptron;
+
 implementation
 
   Constructor TPerceptron.Create;

@@ -36,7 +36,7 @@ object Form1: TForm1
     Height = 15
     Top = 16
     Width = 133
-    Caption = 'Version 1.0.0+20250513'
+    Caption = 'Version 1.0.0+20250514'
     Color = clWhite
     ParentColor = False
     Transparent = False

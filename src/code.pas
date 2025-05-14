@@ -97,7 +97,7 @@ var
   p: TPerceptron;
   i: integer;
   player: CellContent;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
   OpenDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
@@ -143,7 +143,7 @@ var
   i: integer;
   p: TPerceptron;
   player: CellContent;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   TheBoard.ClearBoard;
   GameBoardDrawGrid.Invalidate;
@@ -248,7 +248,7 @@ var
   i: integer;
   p: TPerceptron;
   player: CellContent;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   for player := WhitePiece to BlackPiece do begin
     perceptrons := PlayerPerceptrons[player].Perceptrons;
@@ -267,11 +267,8 @@ var
   filename: string;
   jsonObj: TJSONObject;
   jsonPlayer: TJSONObject;
-  perceptronCount: integer;
-  p: TPerceptron;
-  i: integer;
   player: CellContent;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -283,22 +280,7 @@ begin
       for player := WhitePiece to BlackPiece do begin
         jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
 
-        perceptronCount := JsonManager.ParseJsonPerceptronCount(jsonPlayer);
         perceptrons := PlayerPerceptrons[player].Perceptrons;
-        if (Length(perceptrons) <> perceptronCount) then begin
-          SetLength(perceptrons, perceptronCount);
-        end;
-
-        for i := Low(perceptrons) to High(perceptrons) do begin
-          p := perceptrons[i];
-          if (p = nil) then begin
-            p := TPerceptron.Create;
-            perceptrons[i] := p;
-          end else begin
-            p.ClearPatterns;
-          end;
-        end;
-
         JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
       end;
 
@@ -342,7 +324,7 @@ var
   bestMatchScore: single;
   matchScore: single;
   p: TPerceptron;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
   bestCellPerceptron: TPerceptron;
   bestMovePerceptron: TPerceptron;
   i: integer;
@@ -592,7 +574,7 @@ procedure TForm1.AdjustPerceptronsAfterWin;
 var
   i: integer;
   p: TPerceptron;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
 
@@ -616,7 +598,7 @@ procedure TForm1.AdjustPerceptronsAfterLoss;
 var
   i: integer;
   p: TPerceptron;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
 
@@ -641,7 +623,7 @@ var
   i: integer;
   p: TPerceptron;
   leastUsedPerceptron: TPerceptron;
-  perceptrons: array of TPerceptron;
+  perceptrons: TPerceptronArray;
 begin
   perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
 
