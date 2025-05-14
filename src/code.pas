@@ -328,6 +328,7 @@ var
   bestCellPerceptron: TPerceptron;
   bestMovePerceptron: TPerceptron;
   i: integer;
+  emptyCellCount: integer;
 begin
   perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
 
@@ -335,6 +336,7 @@ begin
   bestRow := MIN_ROW - 1;
   bestCellScore := NEGATIVE_INFINITY;
   bestMovePerceptron := nil;
+  emptyCellCount := 0;
 
   for boardCol := MIN_COL to MAX_COL do begin
     for boardRow := MIN_ROW to MAX_COL do begin
@@ -342,6 +344,8 @@ begin
 
       GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
       if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
+        Inc(emptyCellCount);
+
         // Guarantee a move will be made if no Perceptron finds a positive match score.
         if (bestCol < MIN_COL) then begin
           bestCol := boardCol;
@@ -377,7 +381,10 @@ begin
     end; // for boardRow
   end; // for boareCol
 
-  if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
+  if (emptyCellCount = 0) then begin
+    GameOver := true;
+    LabelGameWinnerMessage.Caption := 'This game is a draw.';
+  end else if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
     inc(bestMovePerceptron.UsageCount);
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
@@ -461,7 +468,6 @@ begin
   result := matchScore;
 end;
 
-//TODO: Pass best move Perceptron to AnalyzeMove procedure. (Pass nil for human player move.)
 procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer);
 var
   selfPlayer: CellContent;
