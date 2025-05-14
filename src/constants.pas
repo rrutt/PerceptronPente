@@ -41,6 +41,8 @@ const
 
   PERCEPTRONS_FILE_NAME = 'Perceptrons.json';
 
+  AUTO_PLAY_SLEEP_MILLISECONDS = 250;
+
 type
   CellContent = (WhitePiece, BlackPiece, EmptyCell, CapturedCell);
   PatternMatchCell = (DoNotCare, MatchEmpty, MatchSelf, MatchOpponent);

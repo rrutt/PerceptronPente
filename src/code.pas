@@ -13,19 +13,17 @@ uses
   constants, gameboard, jsonfilemanager, playerperceptrons, perceptron;
 
 //TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
-//TODO: Increase # perceptrons.
-//TODO: Expand grids to 19x19.
+//TODO: Manually create Perceptrons set file(s).
+//TODO: ??? Expand grids to 19x19.
 //TODO: ??? Serialize game play moves to file using JSON.
 //TODO: ??? Support "instant replay" from current or past serialized play move file.
-//TODO: Setup dual AI auto-play learning environment.
-//TODO: Add option to "partially mutate" Perceprtrons set.
-//TODO: Manually create Perceptrons set file(s).
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
+    ButtonAutoPlay: TButton;
     ButtonRandomizePerceptrons: TButton;
     ButtonWritePerceptronsToFile: TButton;
     ButtonPlayWhite: TButton;
@@ -41,6 +39,7 @@ type
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
 
+    procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -167,6 +166,35 @@ begin
       p.UsageCount := 0;;
     end;
  end;
+end;
+
+procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+begin
+  ButtonNewGameClick(Sender);
+  //GameOver := false;
+  //CurrentPlayerIsHuman := false;
+
+  if (Random < 0.5) then begin
+    CurrentPlayer := WhitePiece;
+    OpponentPlayer := BlackPiece;
+  end else begin
+    CurrentPlayer := BlackPiece;
+    OpponentPlayer := WhitePiece;
+  end;
+
+  repeat
+    MoveForPlayer;
+    GameBoardDrawGrid.Repaint;
+    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+
+    if (CurrentPlayer = BlackPiece) then begin
+      CurrentPlayer := WhitePiece;
+      OpponentPlayer := BlackPiece;
+    end else begin
+      CurrentPlayer := BlackPiece;
+      OpponentPlayer := WhitePiece;
+    end;
+  until (GameOver);
 end;
 
 procedure TForm1.ClearStringGrid;
