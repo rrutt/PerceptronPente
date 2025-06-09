@@ -20,7 +20,7 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="179"/>
+        <TopLine Value="185"/>
         <CursorPos X="35" Y="208"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
@@ -55,7 +55,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="57"/>
-        <CursorPos X="44" Y="66"/>
+        <CursorPos X="32" Y="66"/>
         <UsageCount Value="206"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -63,7 +63,7 @@
         <Filename Value="playerperceptrons.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="30" Y="13"/>
+        <CursorPos X="10" Y="13"/>
         <UsageCount Value="1311"/>
         <Loaded Value="True"/>
       </Unit6>
