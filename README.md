@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 1.0.0+20250514  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.0+20250609  ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **Pente** board game that uses neural network artificial intelligence pattern matching.
 
@@ -14,6 +14,8 @@ The **[Lazarus Integrated Development Environment](https://www.lazarus-ide.org/)
 (Both Free Pascal and the Lazarus IDE are free open-source software products.) 
 
 ## Downloading and Running the Program
+
+_(Binary executable files still to be added...)_
 
 ### Microsoft Windows
 

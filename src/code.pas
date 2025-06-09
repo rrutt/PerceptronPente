@@ -8,12 +8,12 @@ interface
 
 uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, Menus, Grids, Types,
+  Dialogs, ExtCtrls, StdCtrls, ComCtrls, Menus, Grids, Spin, Types,
   fpjson,
   constants, gameboard, jsonfilemanager, playerperceptrons, perceptron;
 
 //TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
-//TODO: Manually create Perceptrons set file(s).
+//TODO: ??? Manually create Perceptrons set file(s).
 //TODO: ??? Expand grids to 19x19.
 //TODO: ??? Serialize game play moves to file using JSON.
 //TODO: ??? Support "instant replay" from current or past serialized play move file.
@@ -38,6 +38,7 @@ type
     LabelFileMessage: TLabel;
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
+    SpinEditAutoPlayCount: TSpinEdit;
 
     procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonNewGameClick(Sender: TObject);
@@ -173,33 +174,41 @@ begin
 end;
 
 procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+var
+  gameCount: integer;
+  gameNumber: integer;
 begin
-  ButtonNewGameClick(Sender);
-  //GameOver := false;
-  //CurrentPlayerIsHuman := false;
+  gameCount := SpinEditAutoPlayCount.Value;
+  for gameNumber := gameCount downto 1 do begin
+    ButtonNewGameClick(Sender);
 
-  if (Random < 0.5) then begin
-    CurrentPlayer := WhitePiece;
-    OpponentPlayer := BlackPiece;
-  end else begin
-    CurrentPlayer := BlackPiece;
-    OpponentPlayer := WhitePiece;
-  end;
-
-  repeat
-    MoveForPlayer;
-    GameBoardDrawGrid.Repaint;
-    GameBoardStringGrid.Repaint;
-    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
-
-    if (CurrentPlayer = BlackPiece) then begin
+    if (Random < 0.5) then begin
       CurrentPlayer := WhitePiece;
       OpponentPlayer := BlackPiece;
     end else begin
       CurrentPlayer := BlackPiece;
       OpponentPlayer := WhitePiece;
     end;
-  until (GameOver);
+
+    repeat
+      MoveForPlayer;
+      GameBoardDrawGrid.Repaint;
+      GameBoardStringGrid.Repaint;
+      Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+
+      if (CurrentPlayer = BlackPiece) then begin
+        CurrentPlayer := WhitePiece;
+        OpponentPlayer := BlackPiece;
+      end else begin
+        CurrentPlayer := BlackPiece;
+        OpponentPlayer := WhitePiece;
+      end;
+    until (GameOver);
+
+    LabelGameWinnerMessage.Repaint;
+    SpinEditAutoPlayCount.Value := gameNumber;
+    SpinEditAutoPlayCount.Repaint;
+  end;
 end;
 
 procedure TForm1.ClearStringGrid;
