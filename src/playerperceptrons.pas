@@ -1,3 +1,5 @@
+// Copyright 2025 Rick Rutt
+
 unit playerperceptrons;
 
 {$mode ObjFPC}{$H+}
@@ -12,8 +14,10 @@ type
   TPlayerPerceptrons = class
   private
   public
-    Wins: integer;
-    Losses: integer;
+    PenteWins: integer;
+    CaptureWins: integer;
+    PenteLosses: integer;
+    CaptureLosses: integer;
     Perceptrons: TPerceptronArray;
   end;
 

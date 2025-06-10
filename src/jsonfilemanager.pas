@@ -71,8 +71,10 @@ end;
 
 procedure TJsonFileManager.ParsePlayerWinsAndLosses(const JsonObj: TJSONObject; PlayerPerceptrons: TPlayerPerceptrons);
 begin
-  PlayerPerceptrons.Wins := JsonObj.FindPath('Wins').AsInteger;
-  PlayerPerceptrons.Losses := JsonObj.FindPath('Losses').AsInteger;
+  PlayerPerceptrons.PenteWins := JsonObj.FindPath('PenteWins').AsInteger;
+  PlayerPerceptrons.CaptureWins := JsonObj.FindPath('CaptureWins').AsInteger;
+  PlayerPerceptrons.PenteLosses := JsonObj.FindPath('PenteLosses').AsInteger;
+  PlayerPerceptrons.CaptureLosses := JsonObj.FindPath('CaptureLosses').AsInteger;
 end;
 
 procedure TJsonFileManager.ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
@@ -183,8 +185,10 @@ begin
     json.Add(playerName, jsonPlayer);
 
     pp := PlayerPerceptrons[Ord(player)];
-    jsonPlayer.Add('Wins', pp.Wins);
-    jsonPlayer.Add('Losses', pp.Losses);
+    jsonPlayer.Add('PenteWins', pp.PenteWins);
+    jsonPlayer.Add('CaptureWins', pp.CaptureWins);
+    jsonPlayer.Add('PenteLosses', pp.PenteLosses);
+    jsonPlayer.Add('CaptureLosses', pp.CaptureLosses);
 
     jsonPerceptrons := TJSONArray.Create;
     perceptrons := pp.Perceptrons;

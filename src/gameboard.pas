@@ -1,3 +1,5 @@
+// Copyright 2025 Rick Rutt
+
 unit gameboard;
 
 {$mode ObjFPC}{$H+}
