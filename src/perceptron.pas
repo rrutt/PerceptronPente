@@ -1,3 +1,5 @@
+// Copyright 2025 Rick Rutt
+
 unit perceptron;
 
 {$mode ObjFPC}{$H+}

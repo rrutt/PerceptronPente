@@ -12,12 +12,6 @@ uses
   fpjson,
   constants, gameboard, jsonfilemanager, playerperceptrons, perceptron;
 
-//TODO: https://www.tpointtech.com/single-layer-perceptron-in-tensorflow
-//TODO: ??? Manually create Perceptrons set file(s).
-//TODO: ??? Expand grids to 19x19.
-//TODO: ??? Serialize game play moves to file using JSON.
-//TODO: ??? Support "instant replay" from current or past serialized play move file.
-
 type
 
   { TForm1 }
@@ -34,6 +28,8 @@ type
     HeadLabel1: TLabel;
     HeadLabel3: TLabel;
     GameBoardStringGrid: TStringGrid;
+    LabelWhitePlayerStatistics: TLabel;
+    LabelBlackPlayerStatistics: TLabel;
     LabelGameWinnerMessage: TLabel;
     LabelFileMessage: TLabel;
     OpenDialog1: TOpenDialog;
@@ -80,6 +76,7 @@ type
     procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
     procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
     function FindLeastUsedPerceptron: TPerceptron;
+    procedure UpdatePlayerStatisticsLabels;
 
   public
 
@@ -107,6 +104,8 @@ begin
   SaveDialog1.Filter := 'JSON files (*.json)|*.json|All Files (*.*)|*.*';
 
   LabelGameWinnerMessage.Caption := '';
+  LabelWhitePlayerStatistics.Caption := '';
+  LabelBlackPlayerStatistics.Caption := '';
   LabelFileMessage.Caption := '';;
 
   TheBoard := TGameBoard.Create;
@@ -126,8 +125,10 @@ begin
 
   for player := WhitePiece to BlackPiece do begin
     pp := TPlayerPerceptrons.Create;
-    pp.Wins := 0;
-    pp.Losses := 0;
+    pp.PenteWins := 0;
+    pp.CaptureWins := 0;
+    pp.PenteLosses := 0;
+    pp.CaptureLosses := 0;
     SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
     perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
@@ -139,7 +140,24 @@ begin
     PlayerPerceptrons[player] := pp;
   end;
 
+  UpdatePlayerStatisticsLabels;
+
   JsonManager := TJsonFileManager.Create;
+end;
+
+procedure TForm1.UpdatePlayerStatisticsLabels;
+begin
+LabelWhitePlayerStatistics.Caption :=
+    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
+    [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
+     PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
+LabelWhitePlayerStatistics.Repaint;
+
+LabelBlackPlayerStatistics.Caption :=
+    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
+    [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
+     PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
+LabelBlackPlayerStatistics.Repaint;
 end;
 
 procedure TForm1.ButtonNewGameClick(Sender: TObject);
@@ -289,11 +307,17 @@ procedure TForm1.ButtonRandomizePerceptronsClick(Sender: TObject);
 var
   i: integer;
   p: TPerceptron;
+  pp: TPlayerPerceptrons;
   player: CellContent;
   perceptrons: TPerceptronArray;
 begin
   for player := WhitePiece to BlackPiece do begin
-    perceptrons := PlayerPerceptrons[player].Perceptrons;
+    pp := PlayerPerceptrons[player];
+    pp.PenteWins := 0;
+    pp.CaptureWins := 0;
+    pp.PenteLosses := 0;
+    pp.CaptureLosses := 0;
+    perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := perceptrons[i];
       p.RandomizePatterns;
@@ -301,7 +325,8 @@ begin
     end;
   end;
 
-  LabelFileMessage.Caption := 'Radomized Perceptrons';
+  UpdatePlayerStatisticsLabels;
+  LabelFileMessage.Caption := 'Randomized Perceptrons';
 end;
 
 procedure TForm1.ButtonReadPerceptronsFromFileClick(Sender: TObject);
@@ -330,6 +355,7 @@ begin
         JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
       end;
 
+      UpdatePlayerStatisticsLabels;
       LabelFileMessage.Caption := 'Perceptrons read from file ' + filename;
     end;
   end else begin
@@ -526,6 +552,7 @@ var
   selfNeighborCount: array[MIN_DIRECTION..MAX_DIRECTION] of integer;
   whileLooping: boolean;
   i: integer;
+  pp: TPlayerPerceptrons;
 begin
   selfPlayer := TheBoard.Cells[MoveCol, MoveRow];
   if (selfPlayer = WhitePiece) then begin
@@ -603,30 +630,44 @@ begin
     end;
   end;
 
-  //TODO: Show player capture counts in form labels.
-
   if (PlayerPenteCount[CurrentPlayer] > 0) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
-      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
+      pp := PlayerPerceptrons[otherPlayer];
+      Inc(pp.PenteLosses);
+      AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
-      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
-      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
+      pp := PlayerPerceptrons[CurrentPlayer];
+      Inc(pp.PenteWins);
+      AdjustPerceptronsAfterWin(pp);
+      pp := PlayerPerceptrons[otherPlayer];
+      Inc(pp.PenteLosses);
+      AdjustPerceptronsAfterLoss(pp);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
-      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
+      pp := PlayerPerceptrons[otherPlayer];
+      Inc(pp.CaptureLosses);
+      AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
-      AdjustPerceptronsAfterWin(PlayerPerceptrons[CurrentPlayer]);
-      AdjustPerceptronsAfterLoss(PlayerPerceptrons[OtherPlayer]);
+      pp := PlayerPerceptrons[CurrentPlayer];
+      Inc(pp.CaptureWins);
+      AdjustPerceptronsAfterWin(pp);
+      pp := PlayerPerceptrons[otherPlayer];
+      Inc(pp.CaptureLosses);
+      AdjustPerceptronsAfterLoss(pp);
     end;
+  end;
+
+  if (GameOver) then begin
+    UpdatePlayerStatisticsLabels;
   end;
 end;
 
@@ -636,8 +677,6 @@ var
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  Inc(Player.Wins);
-
   perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin
@@ -662,8 +701,6 @@ var
   p: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
-  Inc(Player.Losses);
-
   perceptrons := Player.Perceptrons;
 
   for i := Low(perceptrons) to High(perceptrons) do begin

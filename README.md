@@ -1,10 +1,22 @@
 # Perceptron Pente
 
-_Version 1.0.0+20250609  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.0+20250610  ([Version Release Notes](#ReleaseNotes))_ 
 
-**Perceptron Pente** is an open source implementation of the **Pente** board game that uses neural network artificial intelligence pattern matching.
+**Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
-_(More details to follow...)_
+The game can be played by two human players, by a human against the computer, or by two computer players.
+
+The pattern matching appproach is loosely based on the **[Single Layer Perceptron](https://gist.github.com/udayzee05/f878f7807b2c201ad400fc3818a59c2d)** developed during early research into neural networks.
+
+For each computer player (White vs. Black), a set of Perceptron pattern match definitions are used to assign a numerical weight to each open board position. During each computer player move, the computer places its piece on the board position with the highest weight.
+
+After each game ends, the program performs partial _mutations_ on some of the players' Perceptron sets. The type of mutations differ for the winning vs. the losing player. One aspect of the mutation algorithm increases the weighting preference for the most used Perceptron after a winning game.
+
+The goal is to slowly accumulate beneficial mutations that improve the strength of one or both computer players over time. The program supports unattended sessions of multiple _Auto Play_ games between the two computer players.
+
+To support this long-term strategy across multiple sessions, the program allows the current state of the players' Perceptron sets to be save to a JSON text file. The program can reload a previously saved JSON file to continue _evolving_ the computer players' Perceptron sets.
+
+The program allows the human player to play against either of the computer players. This allows independent assessment of the computer player strengths. It may also provide _forcing feedback_ to influence the computer's Perceptron set mutations.
 
 ## About the Software
 
@@ -15,8 +27,6 @@ The **[Lazarus Integrated Development Environment](https://www.lazarus-ide.org/)
 
 ## Downloading and Running the Program
 
-_(Binary executable files still to be added...)_
-
 ### Microsoft Windows
 
 You can run the Pascal Pente program on Microsoft Windows as follows:
@@ -26,6 +36,8 @@ You can run the Pascal Pente program on Microsoft Windows as follows:
 - To uninstall the program, simply delete the **PerceptronPente.exe** file.
 
 ### Ubuntu Linux
+
+_(Linux binary executable fils still to be added in the future...)_
 
 You can run the Pascal Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
 
@@ -49,9 +61,18 @@ Here is an image of the Pascal Pente form during a game
 
 The Form contains these elements:
 
-- 
+- The 9x9 Game Board. Left-click on any cell to make a manual move for White. Right-click on any cell to make a manual move for Black.
+- The corresponding 9x9 grid showing cell move weights base on Perceptron matching scores.
+- A text label showing the most recent game winner.
+- Click the **Play White** button to have the computer make a move for White based on Perceptron pattern matching. The Wins and Losses statistics for White appear next to this button.
+- Click the **Play Black** button to have the computer make a move for Black based on Perceptron pattern matching. The Wins and Losses statistics for Black appear next to this button.
+- Click tne **New Game** button to clear the Game Board to start a new game.
+- Click the **Auto Play** button to have the computer play both players agains each other until one wins.  The _spin edit_ control determines how many successive Auto Play games to play. Type a number, or use the _up_ or _down_ arrow to set the value.
+- Click the **Write Perceptrons to File** button to save the current Perceptron sets for both players to a JSON text file. A file save dialog will appear.
+- Click the **Read Perceptrons from File** button to load both players' Perceptron sets from a previously saved JSON text file.
+- Click the **Randomize Perceptrons** button to generate new random Perceptron sets for both players.
 
-
+When the program first starts, the **Randomize Perceptrons** feature is automatically executed. You may wish to reload the player Perceptron sets from a previously saved JSON text file.
 
 ## Source code compilation notes
 
