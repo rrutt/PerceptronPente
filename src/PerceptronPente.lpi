@@ -28,7 +28,7 @@
       <BuildNr Value="7"/>
       <Language Value="040B"/>
       <CharSet Value="04E2"/>
-      <StringTable CompanyName="Richard Rutt" FileDescription="Perceptron Pente" LegalCopyright="Copyright 2025 Rick Rutt" ProductName="Perceptron Pente" ProductVersion="1.0.1+20250611"/>
+      <StringTable CompanyName="Richard Rutt" FileDescription="Perceptron Pente" LegalCopyright="Copyright 2025 Rick Rutt" ProductName="Perceptron Pente" ProductVersion="1.0.2+20250611"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
