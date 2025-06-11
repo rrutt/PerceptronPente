@@ -14,7 +14,7 @@ type
   TPerceptron = class
   private
   public
-    Weight: single;
+    Weight: double;
     UsageCount: integer;
 
     MatchCells: array[MIN_PATTERN_INDEX..MAX_PATTERN_INDEX, MIN_PATTERN_INDEX..MAX_PATTERN_INDEX] of PatternMatchCell;

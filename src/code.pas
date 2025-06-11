@@ -71,7 +71,7 @@ type
 
     procedure ClearStringGrid;
     procedure MoveForPlayer;
-    function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
+    function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
     procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
     procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
@@ -392,9 +392,9 @@ var
   boardRow: integer;
   bestCol: integer;
   bestRow: integer;
-  bestCellScore: single;
-  bestMatchScore: single;
-  matchScore: single;
+  bestCellScore: double;
+  bestMatchScore: double;
+  matchScore: double;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
   bestCellPerceptron: TPerceptron;
@@ -465,11 +465,11 @@ begin
   end;
 end;
 
-function TForm1.ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
+function TForm1.ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
 var
   reflectionCount: integer;
 
-  matchScore: single;
+  matchScore: double;
 
   colReflection: integer;
   rowReflection: integer;
@@ -682,7 +682,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight * p.UsageCount;
+      p.Weight := p.Weight * WINNING_PERCEPTRON_WEIGHT_FACTOR;
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
@@ -706,7 +706,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight / p.UsageCount;
+      p.Weight := p.Weight * LOSING_PERCEPTRON_WEIGHT_FACTOR;
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
