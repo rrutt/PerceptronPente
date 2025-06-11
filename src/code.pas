@@ -18,6 +18,7 @@ type
 
   TForm1 = class(TForm)
     ButtonAutoPlay: TButton;
+    ButtonPause: TButton;
     ButtonRandomizePerceptrons: TButton;
     ButtonWritePerceptronsToFile: TButton;
     ButtonPlayWhite: TButton;
@@ -38,6 +39,7 @@ type
 
     //procedure AutoPlayThreadProc;
     procedure ButtonAutoPlayClick(Sender: TObject);
+    procedure ButtonPauseClick(Sender: TObject);
     procedure SetupNewGame;
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
@@ -63,6 +65,7 @@ type
     WinningPlayer: CellContent;
 
     GameOver: boolean;
+    ContinueAutoPlay: boolean;
 
     PlayerName: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
@@ -108,7 +111,11 @@ begin
   LabelGameWinnerMessage.Caption := '';
   LabelWhitePlayerStatistics.Caption := '';
   LabelBlackPlayerStatistics.Caption := '';
-  LabelFileMessage.Caption := '';;
+  LabelFileMessage.Caption := '';
+
+  ButtonPause.Left := ButtonAutoPlay.Left;
+  ButtonPause.Enabled := false;
+  ButtonPause.Visible := false;
 
   TheBoard := TGameBoard.Create;
 
@@ -236,12 +243,19 @@ begin
         Form1.CurrentPlayer := BlackPiece;
         Form1.OpponentPlayer := WhitePiece;
       end;
-    until (Form1.GameOver);
+    until (Form1.GameOver or (not Form1.ContinueAutoPlay));
 
     Form1.LabelGameWinnerMessage.Repaint;
     Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
     TThread.Yield;
+
+    if (not Form1.ContinueAutoPlay) then begin
+      break; // Out of for loop
+    end;
   end;
+
+  Form1.ButtonPause.Enabled  := false;
+  Form1.ButtonPause.Visible := false;
   Form1.ButtonAutoPlay.Enabled := True;
 end;
 
@@ -250,8 +264,19 @@ var
   aProc: TProcedure;
 begin
   ButtonAutoPlay.Enabled := False;
+  ButtonPause.Enabled := true;
+  ButtonPause.Visible := true;
+  ContinueAutoPlay := true;
+
   aProc := @AutoPlayThreadProc;
   TThread.CreateAnonymousThread(aProc).Start;
+end;
+
+procedure TForm1.ButtonPauseClick(Sender: TObject);
+begin
+  ContinueAutoPlay := false;
+  ButtonPause.Enabled := false;
+  ButtonPause.Visible := false;
 end;
 
 procedure TForm1.ClearStringGrid;

@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 124
+  Left = 117
   Height = 707
-  Top = 149
+  Top = 178
   Width = 1195
   BorderStyle = bsSingle
   Caption = 'Perceptron Pente'
@@ -54,7 +54,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 8
+    TabOrder = 9
     OnDrawCell = GameBoardDrawGridDrawCell
     OnMouseDown = GameBoardDrawGridMouseDown
   end
@@ -69,7 +69,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 9
+    TabOrder = 10
     OnPrepareCanvas = GameBoardStringGridPrepareCanvas
   end
   object LabelGameWinnerMessage: TLabel
@@ -152,7 +152,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 6
     OnClick = ButtonWritePerceptronsToFileClick
   end
   object ButtonReadPerceptronsFromFile: TButton
@@ -169,7 +169,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 6
+    TabOrder = 7
     OnClick = ButtonReadPerceptronsFromFileClick
   end
   object LabelFileMessage: TLabel
@@ -201,7 +201,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 8
     OnClick = ButtonRandomizePerceptronsClick
   end
   object ButtonAutoPlay: TButton
@@ -218,7 +218,7 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 4
     OnClick = ButtonAutoPlayClick
   end
   object SpinEditAutoPlayCount: TSpinEdit
@@ -239,7 +239,7 @@ object Form1: TForm1
     MaxValue = 1000
     MinValue = 1
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 5
     Value = 1
   end
   object LabelWhitePlayerStatistics: TLabel
@@ -271,6 +271,23 @@ object Form1: TForm1
     Font.Quality = fqDraft
     Font.Style = [fsBold]
     ParentFont = False
+  end
+  object ButtonPause: TButton
+    Left = 648
+    Height = 38
+    Top = 608
+    Width = 143
+    Caption = 'Pause'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -27
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 3
+    OnClick = ButtonPauseClick
   end
   object OpenDialog1: TOpenDialog
     Left = 1064

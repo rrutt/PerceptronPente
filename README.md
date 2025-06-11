@@ -74,6 +74,12 @@ The Form contains these elements:
 
 When the program first starts, the **Randomize Perceptrons** feature is automatically executed. You may wish to reload the player Perceptron sets from a previously saved JSON text file.
 
+Notes on **Auto Play**:
+
+- While an Auto Play session is in progress. the **Auto Play** button changes into a **Pause** button.
+- Click the **Pause** button to suspend the Auto Play session. The button returns to **Auto Play**.
+- You can finish the paused game using manual moves in the Game Board, or by clicking the **Play White** or **Play Black** buttons, to continue the Auto Play session with a new game.
+
 ## Source code compilation notes
 
 Download the **Lazarus IDE**, including **Free Pascal**, from  here:
