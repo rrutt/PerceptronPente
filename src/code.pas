@@ -168,7 +168,11 @@ begin
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
   LabelBlackPlayerStatistics.Repaint;
 
+  {$IFDEF LINUX}
+  Application.ProcessMessages;
+  {$ELSE}
   TThread.Yield;
+  {$ENDIF}
 end;
 
 procedure Tform1.SetupNewGame;
@@ -218,7 +222,11 @@ begin
     Form1.SpinEditAutoPlayCount.Repaint;
 
     Form1.SetupNewGame;
+    {$IFDEF LINUX}
+    Application.ProcessMessages;
+    {$ELSE}
     TThread.Yield;
+    {$ENDIF}
 
     if (Random < 0.5) then begin
       Form1.CurrentPlayer := WhitePiece;
@@ -234,7 +242,11 @@ begin
       Form1.GameBoardStringGrid.Repaint;
 
       Sleep(AUTO_PLAY_MOVE_SLEEP_MILLISECONDS);
+      {$IFDEF LINUX}
+      Application.ProcessMessages;
+      {$ELSE}
       TThread.Yield;
+      {$ENDIF}
 
       if (Form1.CurrentPlayer = BlackPiece) then begin
         Form1.CurrentPlayer := WhitePiece;
@@ -247,7 +259,11 @@ begin
 
     Form1.LabelGameWinnerMessage.Repaint;
     Sleep(AUTO_PLAY_GAME_SLEEP_MILLISECONDS);
+    {$IFDEF LINUX}
+    Application.ProcessMessages;
+    {$ELSE}
     TThread.Yield;
+    {$ENDIF}
 
     if (not Form1.ContinueAutoPlay) then begin
       break; // Out of for loop
@@ -261,15 +277,19 @@ end;
 
 procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
 var
-  aProc: TProcedure;
+  {%H-}aProc: TProcedure;
 begin
   ButtonAutoPlay.Enabled := False;
   ButtonPause.Enabled := true;
   ButtonPause.Visible := true;
   ContinueAutoPlay := true;
 
+  {$IFDEF LINUX}
+  AutoPlayThreadProc;
+  {$ELSE}
   aProc := @AutoPlayThreadProc;
   TThread.CreateAnonymousThread(aProc).Start;
+  {$ENDIF}
 end;
 
 procedure TForm1.ButtonPauseClick(Sender: TObject);
