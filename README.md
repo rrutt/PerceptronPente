@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 1.0.0+20250610  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.1+20250611  ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
@@ -37,7 +37,7 @@ You can run the Pascal Pente program on Microsoft Windows as follows:
 
 ### Ubuntu Linux
 
-_(Linux binary executable fils still to be added in the future...)_
+_(Linux binary executable file to be added in the future...)_
 
 You can run the Pascal Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
 
@@ -55,7 +55,7 @@ Double-click the downloaded copy of **PerceptronPente.exe** (on Windows) or **Pe
 
 When the program starts it displays the **Perceptron Pente** form.
 
-Here is an image of the Pascal Pente form during a game
+Here is an image of the Perceptron Pente form during a game
 
 ![PerceptronPente Form](img/PerceptronPente-Form.png?raw=true "PerceptronPente Form")
 
@@ -73,6 +73,12 @@ The Form contains these elements:
 - Click the **Randomize Perceptrons** button to generate new random Perceptron sets for both players.
 
 When the program first starts, the **Randomize Perceptrons** feature is automatically executed. You may wish to reload the player Perceptron sets from a previously saved JSON text file.
+
+Notes on **Auto Play**:
+
+- While an Auto Play session is in progress. the **Auto Play** button changes into a **Pause** button.
+- Click the **Pause** button to suspend the Auto Play session. The button returns to **Auto Play**.
+- You can finish the paused game using manual moves in the Game Board, or by clicking the **Play White** or **Play Black** buttons, to continue the Auto Play session with a new game.
 
 ## Source code compilation notes
 
@@ -95,6 +101,10 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 <a name="ReleaseNotes"></a>
 
 ## Release Notes
+
+### Version 1.0.1
+
+_(Release notes pending)_
 
 ### Version 1.0.0
 

@@ -18,6 +18,7 @@ type
 
   TForm1 = class(TForm)
     ButtonAutoPlay: TButton;
+    ButtonPause: TButton;
     ButtonRandomizePerceptrons: TButton;
     ButtonWritePerceptronsToFile: TButton;
     ButtonPlayWhite: TButton;
@@ -36,7 +37,10 @@ type
     SaveDialog1: TSaveDialog;
     SpinEditAutoPlayCount: TSpinEdit;
 
+    //procedure AutoPlayThreadProc;
     procedure ButtonAutoPlayClick(Sender: TObject);
+    procedure ButtonPauseClick(Sender: TObject);
+    procedure SetupNewGame;
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -61,6 +65,7 @@ type
     WinningPlayer: CellContent;
 
     GameOver: boolean;
+    ContinueAutoPlay: boolean;
 
     PlayerName: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
@@ -71,7 +76,7 @@ type
 
     procedure ClearStringGrid;
     procedure MoveForPlayer;
-    function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
+    function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
     procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
     procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
@@ -106,7 +111,11 @@ begin
   LabelGameWinnerMessage.Caption := '';
   LabelWhitePlayerStatistics.Caption := '';
   LabelBlackPlayerStatistics.Caption := '';
-  LabelFileMessage.Caption := '';;
+  LabelFileMessage.Caption := '';
+
+  ButtonPause.Left := ButtonAutoPlay.Left;
+  ButtonPause.Enabled := false;
+  ButtonPause.Visible := false;
 
   TheBoard := TGameBoard.Create;
 
@@ -147,20 +156,22 @@ end;
 
 procedure TForm1.UpdatePlayerStatisticsLabels;
 begin
-LabelWhitePlayerStatistics.Caption :=
+  LabelWhitePlayerStatistics.Caption :=
     Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
     [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
      PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
-LabelWhitePlayerStatistics.Repaint;
+  LabelWhitePlayerStatistics.Repaint;
 
-LabelBlackPlayerStatistics.Caption :=
+  LabelBlackPlayerStatistics.Caption :=
     Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
     [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
-LabelBlackPlayerStatistics.Repaint;
+  LabelBlackPlayerStatistics.Repaint;
+
+  TThread.Yield;
 end;
 
-procedure TForm1.ButtonNewGameClick(Sender: TObject);
+procedure Tform1.SetupNewGame;
 var
   i: integer;
   p: TPerceptron;
@@ -191,42 +202,81 @@ begin
  end;
 end;
 
-procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+procedure TForm1.ButtonNewGameClick(Sender: TObject);
+begin
+  SetupNewGame;
+end;
+
+procedure AutoPlayThreadProc;
 var
   gameCount: integer;
   gameNumber: integer;
 begin
-  gameCount := SpinEditAutoPlayCount.Value;
+  gameCount := Form1.SpinEditAutoPlayCount.Value;
   for gameNumber := gameCount downto 1 do begin
-    ButtonNewGameClick(Sender);
+    Form1.SpinEditAutoPlayCount.Value := gameNumber;
+    Form1.SpinEditAutoPlayCount.Repaint;
+
+    Form1.SetupNewGame;
+    TThread.Yield;
 
     if (Random < 0.5) then begin
-      CurrentPlayer := WhitePiece;
-      OpponentPlayer := BlackPiece;
+      Form1.CurrentPlayer := WhitePiece;
+      Form1.OpponentPlayer := BlackPiece;
     end else begin
-      CurrentPlayer := BlackPiece;
-      OpponentPlayer := WhitePiece;
+      Form1.CurrentPlayer := BlackPiece;
+      Form1.OpponentPlayer := WhitePiece;
     end;
 
     repeat
-      MoveForPlayer;
-      GameBoardDrawGrid.Repaint;
-      GameBoardStringGrid.Repaint;
+      Form1.MoveForPlayer;
+      Form1.GameBoardDrawGrid.Repaint;
+      Form1.GameBoardStringGrid.Repaint;
+
       Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+      TThread.Yield;
 
-      if (CurrentPlayer = BlackPiece) then begin
-        CurrentPlayer := WhitePiece;
-        OpponentPlayer := BlackPiece;
+      if (Form1.CurrentPlayer = BlackPiece) then begin
+        Form1.CurrentPlayer := WhitePiece;
+        Form1.OpponentPlayer := BlackPiece;
       end else begin
-        CurrentPlayer := BlackPiece;
-        OpponentPlayer := WhitePiece;
+        Form1.CurrentPlayer := BlackPiece;
+        Form1.OpponentPlayer := WhitePiece;
       end;
-    until (GameOver);
+    until (Form1.GameOver or (not Form1.ContinueAutoPlay));
 
-    LabelGameWinnerMessage.Repaint;
-    SpinEditAutoPlayCount.Value := gameNumber;
-    SpinEditAutoPlayCount.Repaint;
+    Form1.LabelGameWinnerMessage.Repaint;
+    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+    TThread.Yield;
+
+    if (not Form1.ContinueAutoPlay) then begin
+      break; // Out of for loop
+    end;
   end;
+
+  Form1.ButtonPause.Enabled  := false;
+  Form1.ButtonPause.Visible := false;
+  Form1.ButtonAutoPlay.Enabled := True;
+end;
+
+procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+var
+  aProc: TProcedure;
+begin
+  ButtonAutoPlay.Enabled := False;
+  ButtonPause.Enabled := true;
+  ButtonPause.Visible := true;
+  ContinueAutoPlay := true;
+
+  aProc := @AutoPlayThreadProc;
+  TThread.CreateAnonymousThread(aProc).Start;
+end;
+
+procedure TForm1.ButtonPauseClick(Sender: TObject);
+begin
+  ContinueAutoPlay := false;
+  ButtonPause.Enabled := false;
+  ButtonPause.Visible := false;
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -392,9 +442,9 @@ var
   boardRow: integer;
   bestCol: integer;
   bestRow: integer;
-  bestCellScore: single;
-  bestMatchScore: single;
-  matchScore: single;
+  bestCellScore: double;
+  bestMatchScore: double;
+  matchScore: double;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
   bestCellPerceptron: TPerceptron;
@@ -465,11 +515,11 @@ begin
   end;
 end;
 
-function TForm1.ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): single;
+function TForm1.ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
 var
   reflectionCount: integer;
 
-  matchScore: single;
+  matchScore: double;
 
   colReflection: integer;
   rowReflection: integer;
@@ -682,7 +732,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight * p.UsageCount;
+      p.Weight := p.Weight * WINNING_PERCEPTRON_WEIGHT_FACTOR;
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
@@ -706,7 +756,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight / p.UsageCount;
+      p.Weight := p.Weight * LOSING_PERCEPTRON_WEIGHT_FACTOR;
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
