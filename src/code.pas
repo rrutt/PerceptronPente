@@ -36,7 +36,9 @@ type
     SaveDialog1: TSaveDialog;
     SpinEditAutoPlayCount: TSpinEdit;
 
+    //procedure AutoPlayThreadProc;
     procedure ButtonAutoPlayClick(Sender: TObject);
+    procedure SetupNewGame;
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -147,20 +149,22 @@ end;
 
 procedure TForm1.UpdatePlayerStatisticsLabels;
 begin
-LabelWhitePlayerStatistics.Caption :=
+  LabelWhitePlayerStatistics.Caption :=
     Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
     [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
      PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
-LabelWhitePlayerStatistics.Repaint;
+  LabelWhitePlayerStatistics.Repaint;
 
-LabelBlackPlayerStatistics.Caption :=
+  LabelBlackPlayerStatistics.Caption :=
     Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
     [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
-LabelBlackPlayerStatistics.Repaint;
+  LabelBlackPlayerStatistics.Repaint;
+
+  TThread.Yield;
 end;
 
-procedure TForm1.ButtonNewGameClick(Sender: TObject);
+procedure Tform1.SetupNewGame;
 var
   i: integer;
   p: TPerceptron;
@@ -191,42 +195,63 @@ begin
  end;
 end;
 
-procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+procedure TForm1.ButtonNewGameClick(Sender: TObject);
+begin
+  SetupNewGame;
+end;
+
+procedure AutoPlayThreadProc;
 var
   gameCount: integer;
   gameNumber: integer;
 begin
-  gameCount := SpinEditAutoPlayCount.Value;
+  gameCount := Form1.SpinEditAutoPlayCount.Value;
   for gameNumber := gameCount downto 1 do begin
-    ButtonNewGameClick(Sender);
+    Form1.SpinEditAutoPlayCount.Value := gameNumber;
+    Form1.SpinEditAutoPlayCount.Repaint;
+
+    Form1.SetupNewGame;
+    TThread.Yield;
 
     if (Random < 0.5) then begin
-      CurrentPlayer := WhitePiece;
-      OpponentPlayer := BlackPiece;
+      Form1.CurrentPlayer := WhitePiece;
+      Form1.OpponentPlayer := BlackPiece;
     end else begin
-      CurrentPlayer := BlackPiece;
-      OpponentPlayer := WhitePiece;
+      Form1.CurrentPlayer := BlackPiece;
+      Form1.OpponentPlayer := WhitePiece;
     end;
 
     repeat
-      MoveForPlayer;
-      GameBoardDrawGrid.Repaint;
-      GameBoardStringGrid.Repaint;
+      Form1.MoveForPlayer;
+      Form1.GameBoardDrawGrid.Repaint;
+      Form1.GameBoardStringGrid.Repaint;
+
       Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+      TThread.Yield;
 
-      if (CurrentPlayer = BlackPiece) then begin
-        CurrentPlayer := WhitePiece;
-        OpponentPlayer := BlackPiece;
+      if (Form1.CurrentPlayer = BlackPiece) then begin
+        Form1.CurrentPlayer := WhitePiece;
+        Form1.OpponentPlayer := BlackPiece;
       end else begin
-        CurrentPlayer := BlackPiece;
-        OpponentPlayer := WhitePiece;
+        Form1.CurrentPlayer := BlackPiece;
+        Form1.OpponentPlayer := WhitePiece;
       end;
-    until (GameOver);
+    until (Form1.GameOver);
 
-    LabelGameWinnerMessage.Repaint;
-    SpinEditAutoPlayCount.Value := gameNumber;
-    SpinEditAutoPlayCount.Repaint;
+    Form1.LabelGameWinnerMessage.Repaint;
+    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+    TThread.Yield;
   end;
+  Form1.ButtonAutoPlay.Enabled := True;
+end;
+
+procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
+var
+  aProc: TProcedure;
+begin
+  ButtonAutoPlay.Enabled := False;
+  aProc := @AutoPlayThreadProc;
+  TThread.CreateAnonymousThread(aProc).Start;
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -637,15 +662,15 @@ begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
-      AdjustPerceptronsAfterLoss(pp);
+      //TODO:AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.PenteWins);
-      AdjustPerceptronsAfterWin(pp);
+      //TODO:AdjustPerceptronsAfterWin(pp);
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
-      AdjustPerceptronsAfterLoss(pp);
+      //TODO:AdjustPerceptronsAfterLoss(pp);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
@@ -654,15 +679,15 @@ begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
-      AdjustPerceptronsAfterLoss(pp);
+      //TODO:AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.CaptureWins);
-      AdjustPerceptronsAfterWin(pp);
+      //TODO:AdjustPerceptronsAfterWin(pp);
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
-      AdjustPerceptronsAfterLoss(pp);
+      //TODO:AdjustPerceptronsAfterLoss(pp);
     end;
   end;
 
@@ -686,7 +711,7 @@ begin
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
-      p.Mutate;
+      //TODO:p.Mutate;
     end;
   end;
 
@@ -710,7 +735,7 @@ begin
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
-      p.Mutate;
+      //TODO:p.Mutate;
     end;
   end;
 
