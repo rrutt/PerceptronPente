@@ -10,3 +10,4 @@ lib/
 src/PascalPente
 !bin/PascalPente
 !bin/*.exe
+!dat/*.json
