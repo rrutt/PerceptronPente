@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 1.0.1+20250611  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.2+20250611  ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
@@ -20,7 +20,8 @@ The program allows the human player to play against either of the computer playe
 
 ## About the Software
 
-The software is a self-contained executable program, written in **[Free Pascal](https://www.freepascal.org/)**, that runs on Microsoft Windows.
+The software is a self-contained executable program, written in **[Free Pascal](https://www.freepascal.org/)**, that runs on Microsoft Windows or Ubuntu Linux (and presumably other Linux distributions).
+
 (No separate run-time environment is required to run the program.)
 The **[Lazarus Integrated Development Environment](https://www.lazarus-ide.org/)** was used to develop the program.
 (Both Free Pascal and the Lazarus IDE are free open-source software products.) 
@@ -37,11 +38,19 @@ You can run the Pascal Pente program on Microsoft Windows as follows:
 
 ### Ubuntu Linux
 
-**_Note:_** No version is available for Linux, since Free Pascal on Linux does not support the use of a background thread for the Auto Play feature.
+You can run the Pascal Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
+
+- Download the **PerceptronPente** binary executable file (with no file extension) from the **bin** sub-folder from this GitHub.com page.
+
+- Ensure the **PerceptronPente** file has the executable permission.  From a Files window, right-click the file, select Properties, and use the Permissions tab to enable the Execute permission.  To do this in a Terminal window, use the following command:
+  
+    chmod +x PerceptronPente
+
+- To uninstall the program, simply delete the **PerceptronPente** binary executable file.
 
 ### Running the Program
 
-Double-click the downloaded copy of **PerceptronPente.exe** to start the simulation.
+In a file folder viewer, double-click the downloaded copy of **PerceptronPente.exe** (on Windows) or **PerceptronPente** (on Linux) to start the program.
 
 When the program starts it displays the **Perceptron Pente** form.
 
@@ -94,10 +103,10 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ### Version 1.0.1
 
-- Avoid main thread hang by using background thread for Auto Play.
-- Allow Pause of Auto Play.
-- Include _pre-evolved_ Perceptrons JSON text file in **dat** sub-folder.
-- Include Windows executable file in **bin** folder.
+- Avoid main thread hang by using background thread for **Auto Play**.
+- Allow Pause of **Auto Play**.
+- Include _pre-evolved_ Perceptrons JSON text file in the **dat** folder.
+- Include the Windows and Linux executable files in the **bin** folder.
 
 ### Version 1.0.0
 
