@@ -233,7 +233,7 @@ begin
       Form1.GameBoardDrawGrid.Repaint;
       Form1.GameBoardStringGrid.Repaint;
 
-      Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+      Sleep(AUTO_PLAY_MOVE_SLEEP_MILLISECONDS);
       TThread.Yield;
 
       if (Form1.CurrentPlayer = BlackPiece) then begin
@@ -246,7 +246,7 @@ begin
     until (Form1.GameOver or (not Form1.ContinueAutoPlay));
 
     Form1.LabelGameWinnerMessage.Repaint;
-    Sleep(AUTO_PLAY_SLEEP_MILLISECONDS);
+    Sleep(AUTO_PLAY_GAME_SLEEP_MILLISECONDS);
     TThread.Yield;
 
     if (not Form1.ContinueAutoPlay) then begin

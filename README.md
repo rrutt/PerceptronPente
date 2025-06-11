@@ -69,7 +69,7 @@ The Form contains these elements:
 - Click tne **New Game** button to clear the Game Board to start a new game.
 - Click the **Auto Play** button to have the computer play both players agains each other until one wins.  The _spin edit_ control determines how many successive Auto Play games to play. Type a number, or use the _up_ or _down_ arrow to set the value.
 - Click the **Write Perceptrons to File** button to save the current Perceptron sets for both players to a JSON text file. A file save dialog will appear.
-- Click the **Read Perceptrons from File** button to load both players' Perceptron sets from a previously saved JSON text file.
+- Click the **Read Perceptrons from File** button to load both players' Perceptron sets from a previously saved JSON text file. (The **dat** sub-folder contains a _pre-evolved JSON text file.)
 - Click the **Randomize Perceptrons** button to generate new random Perceptron sets for both players.
 
 When the program first starts, the **Randomize Perceptrons** feature is automatically executed. You may wish to reload the player Perceptron sets from a previously saved JSON text file.
@@ -104,8 +104,10 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ### Version 1.0.1
 
-_(Release notes pending)_
+- Avoid main thread hang by using background thread for Auto Play.
+- Allow Pause of Auto Play.
+- Include _pre-evolved_ Perceptrons JSON text file in **dat** sub-folder.
 
 ### Version 1.0.0
 
-This is the initial version of the software.
+- The initial version of the software.
