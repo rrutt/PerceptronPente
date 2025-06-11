@@ -104,7 +104,7 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ### Version 1.0.1
 
-_(Release notes pending)_
+Avoid main thread hang; allow Pause of Auto Play.
 
 ### Version 1.0.0
 
