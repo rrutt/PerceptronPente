@@ -687,15 +687,15 @@ begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
-      //TODO:AdjustPerceptronsAfterLoss(pp);
+      AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.PenteWins);
-      //TODO:AdjustPerceptronsAfterWin(pp);
+      AdjustPerceptronsAfterWin(pp);
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
-      //TODO:AdjustPerceptronsAfterLoss(pp);
+      AdjustPerceptronsAfterLoss(pp);
     end;
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
@@ -704,15 +704,15 @@ begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
-      //TODO:AdjustPerceptronsAfterLoss(pp);
+      AdjustPerceptronsAfterLoss(pp);
     end else begin
       LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.CaptureWins);
-      //TODO:AdjustPerceptronsAfterWin(pp);
+      AdjustPerceptronsAfterWin(pp);
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
-      //TODO:AdjustPerceptronsAfterLoss(pp);
+      AdjustPerceptronsAfterLoss(pp);
     end;
   end;
 
@@ -736,7 +736,7 @@ begin
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
-      //TODO:p.Mutate;
+      p.Mutate;
     end;
   end;
 
@@ -760,7 +760,7 @@ begin
     end;
 
     if (Random < PERCEPTRON_MUTATION_RATE) then begin
-      //TODO:p.Mutate;
+      p.Mutate;
     end;
   end;
 
