@@ -101,7 +101,7 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ## Release Notes
 
-### Version 1.0.1
+### Version 1.0.2
 
 - Avoid main thread hang by using background thread for **Auto Play**.
 - Allow Pause of **Auto Play**.

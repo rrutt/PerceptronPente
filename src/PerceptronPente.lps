@@ -18,7 +18,6 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="263"/>
         <CursorPos X="10" Y="291"/>
@@ -29,6 +28,7 @@
       <Unit2>
         <Filename Value="constants.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <TopLine Value="26"/>
         <CursorPos X="42" Y="45"/>
