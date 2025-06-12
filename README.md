@@ -30,7 +30,7 @@ The **[Lazarus Integrated Development Environment](https://www.lazarus-ide.org/)
 
 ### Microsoft Windows
 
-You can run the Pascal Pente program on Microsoft Windows as follows:
+You can run the Perceptron Pente program on Microsoft Windows as follows:
 
 - Download the **PerceptronPente.exe** binary executable file from the **bin** sub-folder from this GitHub.com page.
 
@@ -38,7 +38,7 @@ You can run the Pascal Pente program on Microsoft Windows as follows:
 
 ### Ubuntu Linux
 
-You can run the Pascal Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
+You can run the Perceptron Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
 
 - Download the **PerceptronPente** binary executable file (with no file extension) from the **bin** sub-folder from this GitHub.com page.
 
@@ -61,7 +61,7 @@ Here is an image of the Perceptron Pente form during a game
 The Form contains these elements:
 
 - The 9x9 Game Board. Left-click on any cell to make a manual move for White. Right-click on any cell to make a manual move for Black.
-- The corresponding 9x9 grid showing cell move weights base on Perceptron matching scores.
+- The corresponding 9x9 grid showing cell move weights based on Perceptron matching scores.
 - A text label showing the most recent game winner.
 - Click the **Play White** button to have the computer make a move for White based on Perceptron pattern matching. The Wins and Losses statistics for White appear next to this button.
 - Click the **Play Black** button to have the computer make a move for Black based on Perceptron pattern matching. The Wins and Losses statistics for Black appear next to this button.
@@ -104,6 +104,7 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 ### Version 1.0.3
 
 - Revised program icon.
+- Corrected JSON text file output match cell indexing to include full Perceptron pattern.
 
 ### Version 1.0.2
 
@@ -111,6 +112,10 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 - Allow Pause of **Auto Play**.
 - Include _pre-evolved_ Perceptrons JSON text file in the **dat** folder.
 - Include the Windows and Linux executable files in the **bin** folder.
+
+### Version 1.0.1
+
+_(Flawed patch version revoked from formal release.)_
 
 ### Version 1.0.0
 

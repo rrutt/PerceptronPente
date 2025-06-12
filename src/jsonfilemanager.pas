@@ -203,8 +203,8 @@ begin
 
       jsonCells := TJSONArray.Create;
 
-      for col := MIN_COL to MAX_COL do begin
-        for row := MIN_ROW to MAX_ROW do begin
+      for col := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
+        for row := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
           if (p.MatchCells[col, row] <> DoNotCare) then begin
             jsonCell := TJSONObject.Create;
             jsonCell.Add('Col', col);
