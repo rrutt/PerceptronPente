@@ -5,6 +5,7 @@ lib/
 *.res
 *.json
 
+src/PerceptronPente
 !bin/PerceptronPente
 !bin/*.exe
 !dat/*.json
