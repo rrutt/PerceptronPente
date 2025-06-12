@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 1.0.2+20250611  ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.3+20250611  ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
@@ -16,6 +16,8 @@ The goal is to slowly accumulate beneficial mutations that improve the strength 
 
 To support this long-term strategy across multiple sessions, the program allows the current state of the players' Perceptron sets to be save to a JSON text file. The program can reload a previously saved JSON file to continue _evolving_ the computer players' Perceptron sets.
 
+The **[Pente Perceptron Viewer](https://github.com/rrutt/PentePerceptronViewer)** is a companion project that displays the Perceptron matching patterns loaded from a JSON text file previously written by the **Perceptron Pente** program.
+
 The program allows the human player to play against either of the computer players. This allows independent assessment of the computer player strengths. It may also provide _forcing feedback_ to influence the computer's Perceptron set mutations.
 
 ## About the Software
@@ -30,7 +32,7 @@ The **[Lazarus Integrated Development Environment](https://www.lazarus-ide.org/)
 
 ### Microsoft Windows
 
-You can run the Pascal Pente program on Microsoft Windows as follows:
+You can run the Perceptron Pente program on Microsoft Windows as follows:
 
 - Download the **PerceptronPente.exe** binary executable file from the **bin** sub-folder from this GitHub.com page.
 
@@ -38,7 +40,7 @@ You can run the Pascal Pente program on Microsoft Windows as follows:
 
 ### Ubuntu Linux
 
-You can run the Pascal Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
+You can run the Perceptron Pente program on Ubuntu Linux (and presumably other Linux distributions) as follows:
 
 - Download the **PerceptronPente** binary executable file (with no file extension) from the **bin** sub-folder from this GitHub.com page.
 
@@ -61,7 +63,7 @@ Here is an image of the Perceptron Pente form during a game
 The Form contains these elements:
 
 - The 9x9 Game Board. Left-click on any cell to make a manual move for White. Right-click on any cell to make a manual move for Black.
-- The corresponding 9x9 grid showing cell move weights base on Perceptron matching scores.
+- The corresponding 9x9 grid showing cell move weights based on Perceptron matching scores.
 - A text label showing the most recent game winner.
 - Click the **Play White** button to have the computer make a move for White based on Perceptron pattern matching. The Wins and Losses statistics for White appear next to this button.
 - Click the **Play Black** button to have the computer make a move for Black based on Perceptron pattern matching. The Wins and Losses statistics for Black appear next to this button.
@@ -101,12 +103,21 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ## Release Notes
 
+### Version 1.0.3
+
+- Revised program icon.
+- Corrected JSON text file output match cell indexing to include full Perceptron pattern.
+
 ### Version 1.0.2
 
 - Avoid main thread hang by using background thread for **Auto Play**.
 - Allow Pause of **Auto Play**.
 - Include _pre-evolved_ Perceptrons JSON text file in the **dat** folder.
 - Include the Windows and Linux executable files in the **bin** folder.
+
+### Version 1.0.1
+
+_(Flawed patch version revoked from formal release.)_
 
 ### Version 1.0.0
 

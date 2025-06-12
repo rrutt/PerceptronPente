@@ -3,11 +3,9 @@ lib/
 
 *.exe
 *.res
-
 *.json
-!CustomPerceptrons.json
 
-src/PascalPente
-!bin/PascalPente
+src/PerceptronPente
+!bin/PerceptronPente
 !bin/*.exe
 !dat/*.json

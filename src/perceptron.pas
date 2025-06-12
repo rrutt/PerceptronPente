@@ -60,8 +60,8 @@ implementation
     for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
         if ((Random < PERCEPTRON_DENSITY) and
-            (patternCol <> MIDDLE_PATTERN_INDEX) and
-            (patternRow <> MIDDLE_PATTERN_INDEX)) then begin
+            ((patternCol <> MIDDLE_PATTERN_INDEX) or
+             (patternRow <> MIDDLE_PATTERN_INDEX))) then begin
 
           if (Random < MATCH_EMPTY_DENSITY) then begin
             matchValue := MatchEmpty;

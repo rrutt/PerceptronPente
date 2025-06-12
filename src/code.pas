@@ -37,7 +37,6 @@ type
     SaveDialog1: TSaveDialog;
     SpinEditAutoPlayCount: TSpinEdit;
 
-    //procedure AutoPlayThreadProc;
     procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonPauseClick(Sender: TObject);
     procedure SetupNewGame;
