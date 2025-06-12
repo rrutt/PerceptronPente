@@ -16,6 +16,8 @@ The goal is to slowly accumulate beneficial mutations that improve the strength 
 
 To support this long-term strategy across multiple sessions, the program allows the current state of the players' Perceptron sets to be save to a JSON text file. The program can reload a previously saved JSON file to continue _evolving_ the computer players' Perceptron sets.
 
+The **[Pente Perceptron Viewer](https://github.com/rrutt/PentePerceptronViewer)** is a companion project that displays the Perceptron matching patterns loaded from a JSON text file previously written by the **Perceptron Pente** program.
+
 The program allows the human player to play against either of the computer players. This allows independent assessment of the computer player strengths. It may also provide _forcing feedback_ to influence the computer's Perceptron set mutations.
 
 ## About the Software
