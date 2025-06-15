@@ -121,7 +121,6 @@ implementation
   var
     patternCol: integer;
     patternRow: integer;
-    matchValue: PatternMatchCell;
   begin
     repeat
       patternCol := Random(MAX_PATTERN_INDEX + 1);
