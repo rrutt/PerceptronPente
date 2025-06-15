@@ -22,6 +22,7 @@ type
 
     Constructor Create;
     procedure ClearPatterns;
+    function RandomizeMatchValue: PatternMatchCell;
     procedure RandomizePatterns;
     procedure RandomizeWeights;
     procedure Mutate;
@@ -51,27 +52,38 @@ implementation
     UsageCount := 0;
   end;
 
+  function TPerceptron.RandomizeMatchValue: PatternMatchCell;
+  var
+    matchValue: PatternMatchCell;
+    r: extended;
+  begin
+    r := Random;
+    if (r < MATCH_EMPTY_DENSITY) then begin
+      matchValue := MatchEmpty;
+    end else if (r < (MATCH_EMPTY_DENSITY + MATCH_SELF_DENSITY)) then begin
+        matchValue := MatchSelf;
+    end else if (r < (MATCH_EMPTY_DENSITY + MATCH_SELF_DENSITY + MATCH_OPPONENT_DENSITY)) then begin
+      matchValue := MatchOpponent;
+    end else begin
+      matchValue := DoNotCare;
+    end;
+
+    result := matchValue;
+  end;
+
   procedure TPerceptron.RandomizePatterns;
   var
     patternCol: integer;
     patternRow: integer;
-    matchValue: PatternMatchCell;
   begin
     for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
         if ((Random < PERCEPTRON_DENSITY) and
             ((patternCol <> MIDDLE_PATTERN_INDEX) or
              (patternRow <> MIDDLE_PATTERN_INDEX))) then begin
-
-          if (Random < MATCH_EMPTY_DENSITY) then begin
-            matchValue := MatchEmpty;
-          end else if (Random < MATCH_SELF_DENSITY) then begin
-              matchValue := MatchSelf;
-          end else begin
-            matchValue := MatchOpponent;
-          end;
-
-          MatchCells[patternCol, patternRow] := matchValue;
+          MatchCells[patternCol, patternRow] := RandomizeMatchValue;
+        end else begin
+          MatchCells[patternCol, patternRow] := DoNotCare;
         end;
       end;
     end;
@@ -92,7 +104,9 @@ implementation
     for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
         matchValue := MatchCells[patternCol, patternRow];
-        if (matchValue <> DoNotCare) then begin
+        if (matchValue = DoNotCare) then begin
+          MatchWeights[patternCol, patternRow] := 0.0;
+        end else begin
           if (Random < 0.5) then begin
             MatchWeights[patternCol, patternRow] := 0.1 + Random;
           end else begin
@@ -107,7 +121,6 @@ implementation
   var
     patternCol: integer;
     patternRow: integer;
-    matchValue: PatternMatchCell;
   begin
     repeat
       patternCol := Random(MAX_PATTERN_INDEX + 1);
@@ -117,17 +130,7 @@ implementation
       patternRow := Random(MAX_PATTERN_INDEX + 1);
     until (patternRow <> MIDDLE_PATTERN_INDEX);
 
-    if (Random < MATCH_EMPTY_DENSITY) then begin
-      matchValue := MatchEmpty;
-    end else if (Random < MATCH_SELF_DENSITY) then begin
-        matchValue := MatchSelf;
-    end else if (Random < MATCH_OPPONENT_DENSITY) then begin
-        matchValue := MatchOpponent;
-    end else begin
-      matchValue := DoNotCare;
-    end;
-
-    MatchCells[patternCol, patternRow] := matchValue;
+    MatchCells[patternCol, patternRow] := RandomizeMatchValue;
 
     if (Random < 0.5) then begin
       MatchWeights[patternCol, patternRow] := 0.1 + Random;
