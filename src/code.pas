@@ -510,7 +510,7 @@ begin
           end;
         end; // for i
 
-        GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(bestMatchScore, ffFixed, 10, 4);
+        GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(bestMatchScore, ffGeneral, 5, 3);
 
         if (bestMatchScore > bestCellScore) then begin
           bestCellScore := bestMatchScore;
@@ -604,7 +604,7 @@ begin
     end; // for patternCol
   end; // for reflectionCount
 
-  result := matchScore;
+  result := matchScore * ThePerceptron.Weight;
 end;
 
 procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
@@ -652,7 +652,9 @@ begin
           inc(selfNeighborCount[direction]);
           if ((selfNeighborCount[direction] + 1) >= PENTE_PIECE_COUNT) then begin
             if (BestMovePerceptron <> nil) then begin
-              BestMovePerceptron.Weight := BestMovePerceptron.Weight * PENTE_WEIGHT_FACTOR;
+              if (BestMovePerceptron.Weight < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+                BestMovePerceptron.Weight := BestMovePerceptron.Weight * PENTE_WEIGHT_FACTOR;
+              end;
             end;
 
             Inc(PlayerPenteCount[CurrentPlayer]);
@@ -671,7 +673,9 @@ begin
           whileLooping := false;
         end else if (otherNeighborCount = CAPTURE_PIECE_COUNT) then begin
           if (BestMovePerceptron <> nil) then begin
-            BestMovePerceptron.Weight := BestMovePerceptron.Weight * CAPTURE_WEIGHT_FACTOR;
+            if (BestMovePerceptron.Weight < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+              BestMovePerceptron.Weight := BestMovePerceptron.Weight * CAPTURE_WEIGHT_FACTOR;
+            end;
           end;
 
           Inc(PlayerCaptureCount[CurrentPlayer]);
@@ -750,15 +754,17 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight * WINNING_PERCEPTRON_WEIGHT_FACTOR;
+    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
+      //TODO: Use addition instead of multiplication to adjust winning weight.
+      p.Weight := p.Weight * WINNING_WEIGHT_FACTOR;
     end;
 
-    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+    if (Random < ((1 / abs(p.Weight)) * WINNING_PERCEPTRON_MUTATION_RATE)) then begin
       p.Mutate;
     end;
   end;
 
+  //TODO: Randomise lowest-weighted instead of least-used Perceptron.
   p := FindLeastUsedPerceptron;
   p.RandomizePatterns;
   p.RandomizeWeights;
@@ -774,15 +780,17 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if (p.UsageCount > 0) then begin
-      p.Weight := p.Weight * LOSING_PERCEPTRON_WEIGHT_FACTOR;
+    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
+      //TODO: Use subtraction instead of multiplication to adjust losing weight.
+      p.Weight := p.Weight * LOSING_WEIGHT_FACTOR;
     end;
 
-    if (Random < PERCEPTRON_MUTATION_RATE) then begin
+    if (Random < LOSING_PERCEPTRON_MUTATION_RATE) then begin
       p.Mutate;
     end;
   end;
 
+  //TODO: Randomise lowest-weighted instead of least-used Perceptron.
   p := FindLeastUsedPerceptron;
   p.RandomizePatterns;
   p.RandomizeWeights;
