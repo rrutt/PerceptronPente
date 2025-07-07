@@ -79,7 +79,7 @@ type
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
     procedure AdjustPerceptronsAfterWin(Player: TPlayerPerceptrons);
     procedure AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
-    function FindLeastUsedPerceptron: TPerceptron;
+    function FindLowestWeightPerceptron: TPerceptron;
     procedure UpdatePlayerStatisticsLabels;
 
   public
@@ -653,7 +653,7 @@ begin
           if ((selfNeighborCount[direction] + 1) >= PENTE_PIECE_COUNT) then begin
             if (BestMovePerceptron <> nil) then begin
               if (BestMovePerceptron.Weight < MAXIMUM_PERCEPTRON_WEIGHT) then begin
-                BestMovePerceptron.Weight := BestMovePerceptron.Weight * PENTE_WEIGHT_FACTOR;
+                BestMovePerceptron.Weight := BestMovePerceptron.Weight + PENTE_WEIGHT_INCREASE;
               end;
             end;
 
@@ -674,7 +674,7 @@ begin
         end else if (otherNeighborCount = CAPTURE_PIECE_COUNT) then begin
           if (BestMovePerceptron <> nil) then begin
             if (BestMovePerceptron.Weight < MAXIMUM_PERCEPTRON_WEIGHT) then begin
-              BestMovePerceptron.Weight := BestMovePerceptron.Weight * CAPTURE_WEIGHT_FACTOR;
+              BestMovePerceptron.Weight := BestMovePerceptron.Weight + CAPTURE_WEIGHT_INCREASE;
             end;
           end;
 
@@ -755,8 +755,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      //TODO: Use addition instead of multiplication to adjust winning weight.
-      p.Weight := p.Weight * WINNING_WEIGHT_FACTOR;
+      p.AdjustWeight(WINNING_WEIGHT_ADJUSTMENT);
     end;
 
     if (Random < ((1 / abs(p.Weight)) * WINNING_PERCEPTRON_MUTATION_RATE)) then begin
@@ -764,8 +763,7 @@ begin
     end;
   end;
 
-  //TODO: Randomise lowest-weighted instead of least-used Perceptron.
-  p := FindLeastUsedPerceptron;
+  p := FindLowestWeightPerceptron;
   p.RandomizePatterns;
   p.RandomizeWeights;
 end;
@@ -781,8 +779,7 @@ begin
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
     if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      //TODO: Use subtraction instead of multiplication to adjust losing weight.
-      p.Weight := p.Weight * LOSING_WEIGHT_FACTOR;
+      p.AdjustWeight(LOSING_WEIGHT_ADJUSTMENT);
     end;
 
     if (Random < LOSING_PERCEPTRON_MUTATION_RATE) then begin
@@ -790,30 +787,33 @@ begin
     end;
   end;
 
-  //TODO: Randomise lowest-weighted instead of least-used Perceptron.
-  p := FindLeastUsedPerceptron;
+  p := FindLowestWeightPerceptron;
   p.RandomizePatterns;
   p.RandomizeWeights;
 end;
 
-function TForm1.FindLeastUsedPerceptron: TPerceptron;
+function TForm1.FindLowestWeightPerceptron: TPerceptron;
 var
   i: integer;
   p: TPerceptron;
-  leastUsedPerceptron: TPerceptron;
+  lowestWeightPerceptron: TPerceptron;
   perceptrons: TPerceptronArray;
 begin
   perceptrons := PlayerPerceptrons[CurrentPlayer].Perceptrons;
 
-  leastUsedPerceptron := perceptrons[Low(perceptrons)];
+  lowestWeightPerceptron := perceptrons[Low(perceptrons)];
   for i := Succ(Low(perceptrons)) to High(perceptrons) do begin
     p := perceptrons[i];
-    if (p.UsageCount < leastUsedPerceptron.UsageCount) then begin
-      leastUsedPerceptron := p;
+    if (abs(p.Weight) < abs(lowestWeightPerceptron.Weight)) then begin
+      lowestWeightPerceptron := p;
+    end else if (abs(p.Weight) = abs(lowestWeightPerceptron.Weight)) then begin
+      if (Random < 0.25) then begin
+        lowestWeightPerceptron := p;
+      end;
     end;
   end;
 
-  result := leastUsedPerceptron;
+  result := lowestWeightPerceptron;
 end;
 
 end.

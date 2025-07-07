@@ -25,6 +25,7 @@ type
     function RandomizeMatchValue: PatternMatchCell;
     procedure RandomizePatterns;
     procedure RandomizeWeights;
+    procedure AdjustWeight(const AdjustmentValue: double);
     procedure Mutate;
   end;
 
@@ -114,6 +115,15 @@ implementation
           end;
         end;
       end;
+    end;
+  end;
+
+  procedure TPerceptron.AdjustWeight(const AdjustmentValue: double);
+  begin
+    if (Weight > 0) then begin
+      Weight := Weight + AdjustmentValue;
+    end else begin
+      Weight := Weight - AdjustmentValue;
     end;
   end;
 
