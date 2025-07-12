@@ -461,9 +461,10 @@ var
   boardRow: integer;
   bestCol: integer;
   bestRow: integer;
+  perceptronScore: double;
+  bestPerceptronScore: double;
+  cellScore: double;
   bestCellScore: double;
-  bestMatchScore: double;
-  matchScore: double;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
   bestCellPerceptron: TPerceptron;
@@ -482,6 +483,7 @@ begin
   for boardCol := MIN_COL to MAX_COL do begin
     for boardRow := MIN_ROW to MAX_COL do begin
       bestCellPerceptron := nil;
+      cellScore := 0.0;
 
       GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
       if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
@@ -495,7 +497,7 @@ begin
           bestRow := boardRow;
         end;
 
-        bestMatchScore := 0.0;
+        bestPerceptronScore := 0.0;
         for i := Low(perceptrons) to High(perceptrons) do begin
           p := perceptrons[i];
 
@@ -503,17 +505,27 @@ begin
             bestCellPerceptron := p;
           end;
 
-          matchScore := ComputeMatchScore(p, boardCol, boardRow);
-          if (matchScore > bestMatchScore) then begin
-            bestMatchScore := matchScore;
+          perceptronScore := ComputeMatchScore(p, boardCol, boardRow);
+          if (perceptronScore > bestPerceptronScore) then begin
+            bestPerceptronScore := perceptronScore;
+            bestCellPerceptron := p;
+          end else if ((perceptronScore = bestPerceptronScore) and (Random < 0.5)) then begin
+            bestPerceptronScore := perceptronScore;
             bestCellPerceptron := p;
           end;
+
+          cellScore:= cellScore + perceptronScore;
         end; // for i
 
-        GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(bestMatchScore, ffGeneral, 5, 3);
+        GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(cellScore, ffGeneral, 5, 3);
 
-        if (bestMatchScore > bestCellScore) then begin
-          bestCellScore := bestMatchScore;
+        if (cellScore > bestCellScore) then begin
+          bestCellScore := cellScore;
+          bestMovePerceptron := bestCellPerceptron;
+          bestCol := boardCol;
+          bestRow := boardRow;
+        end else if ((cellScore = bestCellScore) and (Random < 0.5)) then begin
+          bestCellScore := cellScore;
           bestMovePerceptron := bestCellPerceptron;
           bestCol := boardCol;
           bestRow := boardRow;
@@ -539,6 +551,7 @@ var
   reflectionCount: integer;
 
   matchScore: double;
+  matchNoise: double;
 
   colReflection: integer;
   rowReflection: integer;
@@ -604,7 +617,8 @@ begin
     end; // for patternCol
   end; // for reflectionCount
 
-  result := matchScore * ThePerceptron.Weight;
+  matchNoise := Random * PATTERN_MATCH_NOISE_RATE;
+  result := matchScore * (ThePerceptron.Weight + matchNoise);
 end;
 
 procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
@@ -754,8 +768,12 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      p.AdjustWeight(WINNING_WEIGHT_ADJUSTMENT);
+    if (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+      if (p.UsageCount > 0) then begin
+        p.AdjustWeight(WINNING_USED_WEIGHT_ADJUSTMENT);
+      end else begin
+        p.AdjustWeight(WINNING_UNUSED_WEIGHT_ADJUSTMENT);
+      end;
     end;
 
     if (Random < ((1 / abs(p.Weight)) * WINNING_PERCEPTRON_MUTATION_RATE)) then begin
@@ -778,8 +796,12 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      p.AdjustWeight(LOSING_WEIGHT_ADJUSTMENT);
+    if (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+      if (p.UsageCount > 0) then begin
+        p.AdjustWeight(LOSING_USED_WEIGHT_ADJUSTMENT);
+      end else begin
+        p.AdjustWeight(LOSING_UNUSED_WEIGHT_ADJUSTMENT);
+      end;
     end;
 
     if (Random < LOSING_PERCEPTRON_MUTATION_RATE) then begin

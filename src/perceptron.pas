@@ -76,10 +76,16 @@ implementation
   var
     patternCol: integer;
     patternRow: integer;
+    cellDistanceFromCenter: integer;
+    cellDensity: double;
   begin
     for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
-        if ((Random < PERCEPTRON_DENSITY) and
+        cellDistanceFromCenter :=
+          abs(patternCol - MIDDLE_PATTERN_INDEX) +
+          abs(patternRow - MIDDLE_PATTERN_INDEX);
+        cellDensity := PERCEPTRON_DENSITY / (PERCEPTRON_DENSITY + cellDistanceFromCenter);
+        if ((Random < cellDensity) and
             ((patternCol <> MIDDLE_PATTERN_INDEX) or
              (patternRow <> MIDDLE_PATTERN_INDEX))) then begin
           MatchCells[patternCol, patternRow] := RandomizeMatchValue;
