@@ -23,8 +23,9 @@ type
     Constructor Create;
     procedure ClearPatterns;
     function RandomizeMatchValue: PatternMatchCell;
+    function ComputeCellDensity(const PatternCol: integer; const PatternRow: integer): double;
+    procedure RandomizeCellPatternAndWeight(const PatternCol: integer; const PatternRow: integer);
     procedure RandomizePatterns;
-    procedure RandomizeWeights;
     procedure AdjustWeight(const AdjustmentValue: double);
     procedure Mutate;
   end;
@@ -72,54 +73,49 @@ implementation
     result := matchValue;
   end;
 
+  function TPerceptron.ComputeCellDensity(const PatternCol: integer; const PatternRow: integer): double;
+  var
+    cellDistanceFromCenter: integer;
+    cellDensity: double;
+  begin
+    cellDistanceFromCenter :=
+      abs(PatternCol - MIDDLE_PATTERN_INDEX) +
+      abs(PatternRow - MIDDLE_PATTERN_INDEX);
+    cellDensity := PERCEPTRON_DENSITY / (1 + (cellDistanceFromCenter * cellDistanceFromCenter));
+
+    result := cellDensity;
+  end;
+
+  procedure TPerceptron.RandomizeCellPatternAndWeight(const PatternCol: integer; const PatternRow: integer);
+  var
+    cellDensity: double;
+    r: double;
+  begin
+    cellDensity := ComputeCellDensity(PatternCol, PatternRow);
+    r := Random;
+    if ((r < cellDensity) and
+        ((PatternCol <> MIDDLE_PATTERN_INDEX) or
+         (PatternRow <> MIDDLE_PATTERN_INDEX))) then begin
+      MatchCells[PatternCol, PatternRow] := RandomizeMatchValue;
+      if (Random < 0.5) then begin
+        MatchWeights[PatternCol, PatternRow] := 0.1 + Random;
+      end else begin
+        MatchWeights[PatternCol, PatternRow] := - (0.1 + Random);
+      end;
+    end else begin
+      MatchCells[PatternCol, PatternRow] := DoNotCare;
+      MatchWeights[PatternCol, PatternRow] := 0.0;
+    end;
+  end;
+
   procedure TPerceptron.RandomizePatterns;
   var
     patternCol: integer;
     patternRow: integer;
-    cellDistanceFromCenter: integer;
-    cellDensity: double;
   begin
     for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
-        cellDistanceFromCenter :=
-          abs(patternCol - MIDDLE_PATTERN_INDEX) +
-          abs(patternRow - MIDDLE_PATTERN_INDEX);
-        cellDensity := PERCEPTRON_DENSITY / (PERCEPTRON_DENSITY + cellDistanceFromCenter);
-        if ((Random < cellDensity) and
-            ((patternCol <> MIDDLE_PATTERN_INDEX) or
-             (patternRow <> MIDDLE_PATTERN_INDEX))) then begin
-          MatchCells[patternCol, patternRow] := RandomizeMatchValue;
-        end else begin
-          MatchCells[patternCol, patternRow] := DoNotCare;
-        end;
-      end;
-    end;
-  end;
-
-  procedure TPerceptron.RandomizeWeights;
-  var
-    patternCol: integer;
-    patternRow: integer;
-    matchValue: PatternMatchCell;
-  begin
-    if (Random < 0.5) then begin
-      Weight := +1.0;
-    end else begin
-      Weight := -1.0;
-    end;
-
-    for patternCol := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
-      for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
-        matchValue := MatchCells[patternCol, patternRow];
-        if (matchValue = DoNotCare) then begin
-          MatchWeights[patternCol, patternRow] := 0.0;
-        end else begin
-          if (Random < 0.5) then begin
-            MatchWeights[patternCol, patternRow] := 0.1 + Random;
-          end else begin
-            MatchWeights[patternCol, patternRow] := - (0.1 + Random);
-          end;
-        end;
+        RandomizeCellPatternAndWeight(patternCol, patternRow);
       end;
     end;
   end;
@@ -146,13 +142,7 @@ implementation
       patternRow := Random(MAX_PATTERN_INDEX + 1);
     until (patternRow <> MIDDLE_PATTERN_INDEX);
 
-    MatchCells[patternCol, patternRow] := RandomizeMatchValue;
-
-    if (Random < 0.5) then begin
-      MatchWeights[patternCol, patternRow] := 0.1 + Random;
-    end else begin
-      MatchWeights[patternCol, patternRow] := - (0.1 + Random);
-    end;
+    RandomizeCellPatternAndWeight(patternCol, patternRow);
   end;
 end.
 
