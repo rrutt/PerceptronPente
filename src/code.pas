@@ -143,7 +143,7 @@ begin
     perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := TPerceptron.Create;
-      p.RandomizePatterns;
+      p.RandomizePatternsAndWeight;
       perceptrons[i] := p;
     end;
     PlayerPerceptrons[player] := pp;
@@ -394,7 +394,7 @@ begin
     perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := perceptrons[i];
-      p.RandomizePatterns;
+      p.RandomizePatternsAndWeight;
     end;
   end;
 
@@ -795,7 +795,7 @@ begin
   end;
 
   p := FindLowestWeightPerceptron;
-  p.RandomizePatterns;
+  p.RandomizePatternsAndWeight;
 end;
 
 procedure TForm1.AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
@@ -822,7 +822,7 @@ begin
   end;
 
   p := FindLowestWeightPerceptron;
-  p.RandomizePatterns;
+  p.RandomizePatternsAndWeight;
 end;
 
 function TForm1.FindLowestWeightPerceptron: TPerceptron;

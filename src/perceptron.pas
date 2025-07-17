@@ -25,7 +25,7 @@ type
     function RandomizeMatchValue: PatternMatchCell;
     function ComputeCellDensity(const PatternCol: integer; const PatternRow: integer): double;
     procedure RandomizeCellPatternAndWeight(const PatternCol: integer; const PatternRow: integer);
-    procedure RandomizePatterns;
+    procedure RandomizePatternsAndWeight;
     procedure AdjustWeight(const AdjustmentValue: double);
     procedure Mutate;
   end;
@@ -108,7 +108,7 @@ implementation
     end;
   end;
 
-  procedure TPerceptron.RandomizePatterns;
+  procedure TPerceptron.RandomizePatternsAndWeight;
   var
     patternCol: integer;
     patternRow: integer;
@@ -117,6 +117,12 @@ implementation
       for patternRow := MIN_PATTERN_INDEX to MAX_PATTERN_INDEX do begin
         RandomizeCellPatternAndWeight(patternCol, patternRow);
       end;
+    end;
+
+    if (Random < PERCEPTRON_WEIGHT_BIAS) then begin
+      Weight := +1.0;
+    end else begin
+      Weight := -1.0;
     end;
   end;
 
