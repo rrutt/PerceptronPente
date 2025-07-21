@@ -81,7 +81,7 @@ implementation
     cellDistanceFromCenter :=
       abs(PatternCol - MIDDLE_PATTERN_INDEX) +
       abs(PatternRow - MIDDLE_PATTERN_INDEX);
-    cellDensity := PERCEPTRON_DENSITY / (1 + (cellDistanceFromCenter * cellDistanceFromCenter));
+    cellDensity := PERCEPTRON_DENSITY / (1 + (cellDistanceFromCenter * cellDistanceFromCenter * cellDistanceFromCenter));
 
     result := cellDensity;
   end;
@@ -97,7 +97,7 @@ implementation
         ((PatternCol <> MIDDLE_PATTERN_INDEX) or
          (PatternRow <> MIDDLE_PATTERN_INDEX))) then begin
       MatchCells[PatternCol, PatternRow] := RandomizeMatchValue;
-      if (Random < 0.5) then begin
+      if (Random < PERCEPTRON_CELL_WEIGHT_BIAS) then begin
         MatchWeights[PatternCol, PatternRow] := 0.1 + Random;
       end else begin
         MatchWeights[PatternCol, PatternRow] := - (0.1 + Random);

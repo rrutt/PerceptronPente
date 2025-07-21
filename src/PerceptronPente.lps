@@ -8,7 +8,7 @@
       <Unit0>
         <Filename Value="PerceptronPente.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos Y="20"/>
+        <CursorPos X="14" Y="18"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -18,10 +18,9 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="810"/>
-        <CursorPos X="2" Y="826"/>
+        <TopLine Value="604"/>
+        <CursorPos Y="585"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -29,9 +28,10 @@
       <Unit2>
         <Filename Value="constants.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="31"/>
-        <CursorPos X="40" Y="55"/>
+        <TopLine Value="9"/>
+        <CursorPos X="25" Y="26"/>
         <UsageCount Value="228"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -47,8 +47,8 @@
         <Filename Value="perceptron.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="4"/>
-        <TopLine Value="7"/>
-        <CursorPos Y="29"/>
+        <TopLine Value="67"/>
+        <CursorPos Y="84"/>
         <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit4>
@@ -74,123 +74,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="99" TopLine="93"/>
+        <Caret Line="121" TopLine="93"/>
       </Position1>
       <Position2>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="121" TopLine="93"/>
+        <Caret Line="84" Column="94" TopLine="68"/>
       </Position2>
       <Position3>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="99" TopLine="93"/>
+        <Caret Line="106" TopLine="80"/>
       </Position3>
       <Position4>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="121" TopLine="93"/>
-      </Position4>
-      <Position5>
         <Filename Value="code.pas"/>
         <Caret Line="147" TopLine="131"/>
+      </Position4>
+      <Position5>
+        <Filename Value="perceptron.pas"/>
+        <Caret Line="91" Column="25" TopLine="80"/>
       </Position5>
       <Position6>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="99" TopLine="93"/>
+        <Caret Line="17" Column="5"/>
       </Position6>
       <Position7>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="121" TopLine="93"/>
+        <Caret Line="30" Column="20"/>
       </Position7>
       <Position8>
-        <Filename Value="code.pas"/>
-        <Caret Line="147" TopLine="131"/>
+        <Filename Value="perceptron.pas"/>
+        <Caret Line="129" Column="22" TopLine="116"/>
       </Position8>
       <Position9>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="99" TopLine="93"/>
+        <Caret Line="28" Column="32" TopLine="10"/>
       </Position9>
       <Position10>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="121" TopLine="93"/>
+        <Caret Line="112" Column="42" TopLine="112"/>
       </Position10>
       <Position11>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="84" Column="94" TopLine="68"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="146" Column="9" TopLine="130"/>
       </Position11>
       <Position12>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="106" TopLine="80"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="400" TopLine="381"/>
       </Position12>
       <Position13>
         <Filename Value="code.pas"/>
-        <Caret Line="147" TopLine="131"/>
+        <Caret Line="802" TopLine="783"/>
       </Position13>
       <Position14>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="91" Column="25" TopLine="80"/>
+        <Caret Line="127" Column="26" TopLine="112"/>
       </Position14>
       <Position15>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="17" Column="5"/>
+        <Caret Line="135" Column="45" TopLine="122"/>
       </Position15>
       <Position16>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="30" Column="20"/>
+        <Caret Line="100" Column="87" TopLine="96"/>
       </Position16>
       <Position17>
         <Filename Value="perceptron.pas"/>
-        <Caret Line="129" Column="22" TopLine="116"/>
+        <Caret Line="29" TopLine="7"/>
       </Position17>
       <Position18>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="28" Column="32" TopLine="10"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="147" TopLine="130"/>
       </Position18>
       <Position19>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="112" Column="42" TopLine="112"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="398" TopLine="382"/>
       </Position19>
       <Position20>
         <Filename Value="code.pas"/>
-        <Caret Line="146" Column="9" TopLine="130"/>
+        <Caret Line="799" Column="2" TopLine="783"/>
       </Position20>
       <Position21>
         <Filename Value="code.pas"/>
-        <Caret Line="400" TopLine="381"/>
+        <Caret Line="826" TopLine="810"/>
       </Position21>
       <Position22>
-        <Filename Value="code.pas"/>
-        <Caret Line="802" TopLine="783"/>
+        <Filename Value="constants.pas"/>
+        <Caret Line="51" Column="25" TopLine="34"/>
       </Position22>
       <Position23>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="127" Column="26" TopLine="112"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="821" Column="9" TopLine="810"/>
       </Position23>
       <Position24>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="135" Column="45" TopLine="122"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="80" Column="31" TopLine="63"/>
       </Position24>
       <Position25>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="100" Column="87" TopLine="96"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="623" TopLine="604"/>
       </Position25>
       <Position26>
-        <Filename Value="perceptron.pas"/>
-        <Caret Line="29" TopLine="7"/>
+        <Filename Value="code.pas"/>
+        <Caret Line="619" Column="18" TopLine="545"/>
       </Position26>
       <Position27>
         <Filename Value="code.pas"/>
-        <Caret Line="147" TopLine="130"/>
+        <Caret Line="79" Column="28" TopLine="66"/>
       </Position27>
       <Position28>
         <Filename Value="code.pas"/>
-        <Caret Line="398" TopLine="382"/>
+        <Caret Line="480" TopLine="470"/>
       </Position28>
       <Position29>
         <Filename Value="code.pas"/>
-        <Caret Line="799" Column="2" TopLine="783"/>
+        <Caret Line="80" Column="31" TopLine="66"/>
       </Position29>
       <Position30>
-        <Filename Value="code.pas"/>
-        <Caret Line="826" TopLine="810"/>
+        <Filename Value="constants.pas"/>
+        <Caret Line="26" Column="25" TopLine="9"/>
       </Position30>
     </JumpHistory>
     <RunParams>

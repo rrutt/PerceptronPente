@@ -615,16 +615,16 @@ begin
 
         if ((col >= MIN_COL) and (col <= MAX_COL) and (row >= MIN_ROW) and (row <= MAX_ROW)) then begin
           boardCell := TheBoard.Cells[col, row];
-          if ((pattern = MatchEmpty) and
-              ((boardCell = EmptyCell) or (boardCell = CapturedCell))) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if ((pattern = MatchSelf) and (boardCell = CurrentPlayer)) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if ((pattern = MatchOpponent) and (boardCell = OpponentPlayer)) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if (pattern <> DoNotCare) then begin
-            matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
-          end;
+          if (pattern <> DoNotCare) then begin
+            if ( ((pattern = MatchEmpty) and ((boardCell = EmptyCell) or (boardCell = CapturedCell)))
+              or ((pattern = MatchSelf) and (boardCell = CurrentPlayer))
+              or ((pattern = MatchOpponent) and (boardCell = OpponentPlayer))
+            ) then begin
+              matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
+            end else begin
+              matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
+            end;
+          end; // if not DoNotCare
         end; // if within board
       end; // for patternRow
     end; // for patternCol
