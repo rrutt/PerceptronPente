@@ -57,6 +57,8 @@ type
   private
     TheBoard: TGameBoard;
 
+    MoveCount: integer;
+
     CurrentPlayerIsHuman: boolean;
 
     CurrentPlayer: CellContent;
@@ -141,8 +143,7 @@ begin
     perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := TPerceptron.Create;
-      p.RandomizePatterns;
-      p.RandomizeWeights;
+      p.RandomizePatternsAndWeight;
       perceptrons[i] := p;
     end;
     PlayerPerceptrons[player] := pp;
@@ -185,6 +186,8 @@ begin
   GameBoardDrawGrid.Invalidate;
   ClearStringGrid;
   LabelGameWinnerMessage.Caption := '';
+
+  MoveCount := 0;
 
   PlayerCaptureCount[WhitePiece] := 0;
   PlayerCaptureCount[BlackPiece] := 0;
@@ -318,6 +321,8 @@ var
 begin
   CurrentPlayerIsHuman := true;
 
+  inc(MoveCount);
+
   if (Button = mbLeft) then begin
     CurrentPlayer := WhitePiece;
     OpponentPlayer := BlackPiece;
@@ -389,8 +394,7 @@ begin
     perceptrons := pp.Perceptrons;
     for i := Low(perceptrons) to High(perceptrons) do begin
       p := perceptrons[i];
-      p.RandomizePatterns;
-      p.RandomizeWeights;
+      p.RandomizePatternsAndWeight;
     end;
   end;
 
@@ -461,9 +465,10 @@ var
   boardRow: integer;
   bestCol: integer;
   bestRow: integer;
+  perceptronScore: double;
+  bestPerceptronScore: double;
+  cellScore: double;
   bestCellScore: double;
-  bestMatchScore: double;
-  matchScore: double;
   p: TPerceptron;
   perceptrons: TPerceptronArray;
   bestCellPerceptron: TPerceptron;
@@ -479,59 +484,79 @@ begin
   bestMovePerceptron := nil;
   emptyCellCount := 0;
 
-  for boardCol := MIN_COL to MAX_COL do begin
-    for boardRow := MIN_ROW to MAX_COL do begin
-      bestCellPerceptron := nil;
+  if (MoveCount = 0) then begin
+    bestCol := CENTER_COL;
+    bestRow := CENTER_ROW;
+  end else begin
+    for boardCol := MIN_COL to MAX_COL do begin
+      for boardRow := MIN_ROW to MAX_COL do begin
+        bestCellPerceptron := nil;
+        cellScore := 0.0;
 
-      GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
-      if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
-        Inc(emptyCellCount);
+        GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
+        if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
+          Inc(emptyCellCount);
 
-        // Guarantee a move will be made if no Perceptron finds a positive match score.
-        if (bestCol < MIN_COL) then begin
-          bestCol := boardCol;
-        end;
-        if (bestRow < MIN_ROW) then begin
-          bestRow := boardRow;
-        end;
-
-        bestMatchScore := 0.0;
-        for i := Low(perceptrons) to High(perceptrons) do begin
-          p := perceptrons[i];
-
-          if (bestCellPerceptron = nil) then begin
-            bestCellPerceptron := p;
+          // Guarantee a move will be made if no Perceptron finds a positive match score.
+          if (bestCol < MIN_COL) then begin
+            bestCol := boardCol;
+          end;
+          if (bestRow < MIN_ROW) then begin
+            bestRow := boardRow;
           end;
 
-          matchScore := ComputeMatchScore(p, boardCol, boardRow);
-          if (matchScore > bestMatchScore) then begin
-            bestMatchScore := matchScore;
-            bestCellPerceptron := p;
-          end;
-        end; // for i
+          bestPerceptronScore := 0.0;
+          for i := Low(perceptrons) to High(perceptrons) do begin
+            p := perceptrons[i];
 
-        GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(bestMatchScore, ffGeneral, 5, 3);
+            if (bestCellPerceptron = nil) then begin
+              bestCellPerceptron := p;
+            end;
 
-        if (bestMatchScore > bestCellScore) then begin
-          bestCellScore := bestMatchScore;
-          bestMovePerceptron := bestCellPerceptron;
-          bestCol := boardCol;
-          bestRow := boardRow;
-        end; // if bestMatchScore
-      end; // if EmptyCell or CapturedCell
-    end; // for boardRow
-  end; // for boareCol
+            perceptronScore := ComputeMatchScore(p, boardCol, boardRow);
+            if (perceptronScore > bestPerceptronScore) then begin
+              bestPerceptronScore := perceptronScore;
+              bestCellPerceptron := p;
+            end else if ((perceptronScore = bestPerceptronScore) and (Random < 0.5)) then begin
+              bestPerceptronScore := perceptronScore;
+              bestCellPerceptron := p;
+            end;
 
-  if (emptyCellCount = 0) then begin
+            cellScore:= cellScore + perceptronScore;
+          end; // for i
+
+          GameBoardStringGrid.Cells[boardCol, boardRow] := FloatToStrF(cellScore, ffGeneral, 5, 3);
+
+          if (cellScore > bestCellScore) then begin
+            bestCellScore := cellScore;
+            bestMovePerceptron := bestCellPerceptron;
+            bestCol := boardCol;
+            bestRow := boardRow;
+          end else if ((cellScore = bestCellScore) and (Random < 0.5)) then begin
+            bestCellScore := cellScore;
+            bestMovePerceptron := bestCellPerceptron;
+            bestCol := boardCol;
+            bestRow := boardRow;
+          end; // if bestMatchScore
+        end; // if EmptyCell or CapturedCell
+      end; // for boardRow
+    end; // for boardCol
+  end;
+
+  if ((MoveCount > 0) and (emptyCellCount = 0)) then begin
     GameOver := true;
     LabelGameWinnerMessage.Caption := 'This game is a draw.';
   end else if ((bestCol >= MIN_COL) and (bestRow >= MIN_ROW)) then begin
-    inc(bestMovePerceptron.UsageCount);
+    if (bestMovePerceptron <> nil) then begin
+      inc(bestMovePerceptron.UsageCount);
+    end;
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
     GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
     AnalyzeMove(bestCol, bestRow, bestMovePerceptron);
     GameBoardDrawGrid.Invalidate;
   end;
+
+  inc(MoveCount);
 end;
 
 function TForm1.ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
@@ -539,6 +564,7 @@ var
   reflectionCount: integer;
 
   matchScore: double;
+  matchNoise: double;
 
   colReflection: integer;
   rowReflection: integer;
@@ -589,22 +615,24 @@ begin
 
         if ((col >= MIN_COL) and (col <= MAX_COL) and (row >= MIN_ROW) and (row <= MAX_ROW)) then begin
           boardCell := TheBoard.Cells[col, row];
-          if ((pattern = MatchEmpty) and
-              ((boardCell = EmptyCell) or (boardCell = CapturedCell))) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if ((pattern = MatchSelf) and (boardCell = CurrentPlayer)) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if ((pattern = MatchOpponent) and (boardCell = OpponentPlayer)) then begin
-            matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-          end else if (pattern <> DoNotCare) then begin
-            matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
-          end;
+          if (pattern <> DoNotCare) then begin
+            if ( ((pattern = MatchEmpty) and ((boardCell = EmptyCell) or (boardCell = CapturedCell)))
+              or ((pattern = MatchSelf) and (boardCell = CurrentPlayer))
+              or ((pattern = MatchOpponent) and (boardCell = OpponentPlayer))
+            ) then begin
+              matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
+            //TODO: Reinstate cell weight negation on board position mismatch?
+            //end else begin
+            //  matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
+            end;
+          end; // if not DoNotCare
         end; // if within board
       end; // for patternRow
     end; // for patternCol
   end; // for reflectionCount
 
-  result := matchScore * ThePerceptron.Weight;
+  matchNoise := Random * PATTERN_MATCH_NOISE_RATE;
+  result := matchScore * (ThePerceptron.Weight + matchNoise);
 end;
 
 procedure TForm1.AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
@@ -754,8 +782,12 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      p.AdjustWeight(WINNING_WEIGHT_ADJUSTMENT);
+    if (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+      if (p.UsageCount > 0) then begin
+        p.AdjustWeight(WINNING_USED_WEIGHT_ADJUSTMENT);
+      end else begin
+        p.AdjustWeight(WINNING_UNUSED_WEIGHT_ADJUSTMENT);
+      end;
     end;
 
     if (Random < ((1 / abs(p.Weight)) * WINNING_PERCEPTRON_MUTATION_RATE)) then begin
@@ -764,8 +796,7 @@ begin
   end;
 
   p := FindLowestWeightPerceptron;
-  p.RandomizePatterns;
-  p.RandomizeWeights;
+  p.RandomizePatternsAndWeight;
 end;
 
 procedure TForm1.AdjustPerceptronsAfterLoss(Player: TPlayerPerceptrons);
@@ -778,8 +809,12 @@ begin
 
   for i := Low(perceptrons) to High(perceptrons) do begin
     p := perceptrons[i];
-    if ((p.UsageCount > 0) and (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT)) then begin
-      p.AdjustWeight(LOSING_WEIGHT_ADJUSTMENT);
+    if (abs(p.Weight) < MAXIMUM_PERCEPTRON_WEIGHT) then begin
+      if (p.UsageCount > 0) then begin
+        p.AdjustWeight(LOSING_USED_WEIGHT_ADJUSTMENT);
+      end else begin
+        p.AdjustWeight(LOSING_UNUSED_WEIGHT_ADJUSTMENT);
+      end;
     end;
 
     if (Random < LOSING_PERCEPTRON_MUTATION_RATE) then begin
@@ -788,8 +823,7 @@ begin
   end;
 
   p := FindLowestWeightPerceptron;
-  p.RandomizePatterns;
-  p.RandomizeWeights;
+  p.RandomizePatternsAndWeight;
 end;
 
 function TForm1.FindLowestWeightPerceptron: TPerceptron;

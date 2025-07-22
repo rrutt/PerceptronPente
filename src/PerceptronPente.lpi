@@ -24,11 +24,11 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <RevisionNr Value="5"/>
-      <BuildNr Value="2"/>
+      <RevisionNr Value="6"/>
+      <BuildNr Value="5"/>
       <Language Value="040B"/>
       <CharSet Value="04E6"/>
-      <StringTable CompanyName="Richard Rutt" FileDescription="Perceptron Pente" LegalCopyright="Copyright 2025 Rick Rutt" ProductName="Perceptron Pente" ProductVersion="1.0.5+20250707"/>
+      <StringTable CompanyName="Richard Rutt" FileDescription="Perceptron Pente" LegalCopyright="Copyright 2025 Rick Rutt" ProductName="Perceptron Pente" ProductVersion="1.0.6+20250722"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>

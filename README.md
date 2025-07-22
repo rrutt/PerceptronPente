@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 1.0.5+20250707 ([Version Release Notes](#ReleaseNotes))_ 
+_Version 1.0.6+20250716 ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
@@ -102,6 +102,14 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 <a name="ReleaseNotes"></a>
 
 ## Release Notes
+
+### Version 1.0.6
+
+- Added small amount of random noise when comparing pattern match weights.
+- Adjust "unused" Perceptron weights after win or loss.
+- Focus Perceptron pattern match cells closer to center.
+- Combine multiple Perceptron match weights when evaluating each board cell for a move.
+- Make the first Auto Play move at the center board cell.
 
 ### Version 1.0.5
 
