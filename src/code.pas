@@ -621,8 +621,9 @@ begin
               or ((pattern = MatchOpponent) and (boardCell = OpponentPlayer))
             ) then begin
               matchScore := matchScore + ThePerceptron.MatchWeights[patternCol, patternRow];
-            end else begin
-              matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
+            //TODO: Reinstate cell weight negation on board position mismatch?
+            //end else begin
+            //  matchScore := matchScore - ThePerceptron.MatchWeights[patternCol, patternRow];
             end;
           end; // if not DoNotCare
         end; // if within board
