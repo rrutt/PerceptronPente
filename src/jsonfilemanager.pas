@@ -1,4 +1,4 @@
-// Copyright 2025 Rick Rutt
+// Copyright 2025-2026 Rick Rutt
 
 // https://medium.com/@marcusfernstrm/freepascal-and-json-337c04cad489
 // https://www.freepascal.org/docs-html/current/fcl/fpjson/index.html

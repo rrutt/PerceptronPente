@@ -1,4 +1,4 @@
-// Copyright 2025 Rick Rutt
+// Copyright 2025-2026 Rick Rutt
 
 unit code;
 
@@ -36,6 +36,7 @@ type
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
     SpinEditAutoPlayCount: TSpinEdit;
+    TournamentStringGrid: TStringGrid;
 
     procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonPauseClick(Sender: TObject);
@@ -52,6 +53,8 @@ type
     procedure GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; {%H-}aState: TGridDrawState);
     procedure GameBoardStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
+      {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
+    procedure TournamentStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
       {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
 
   private
@@ -75,6 +78,7 @@ type
 
     JsonManager: TJsonFileManager;
 
+    procedure InitializeTournamentGrid;
     procedure ClearStringGrid;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
@@ -120,6 +124,8 @@ begin
 
   TheBoard := TGameBoard.Create;
 
+  InitializeTournamentGrid;
+
   WinningPlayer := EmptyCell;
   GameOver := false;
   CurrentPlayerIsHuman := false;
@@ -157,13 +163,13 @@ end;
 procedure TForm1.UpdatePlayerStatisticsLabels;
 begin
   LabelWhitePlayerStatistics.Caption :=
-    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
+    Format('%d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
     [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
      PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
   LabelWhitePlayerStatistics.Repaint;
 
   LabelBlackPlayerStatistics.Caption :=
-    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
+    Format('%d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
     [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
   LabelBlackPlayerStatistics.Repaint;
@@ -301,6 +307,27 @@ begin
   ButtonPause.Visible := false;
 end;
 
+procedure TForm1.InitializeTournamentGrid;
+var
+  i: integer;
+begin
+  with TournamentStringGrid do begin
+    Cells[TOURNAMENT_GRID_PLAYER_COL, 0] := 'Player';
+    Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente Win';
+    Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture Win';
+    Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente Loss';
+    Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture Loss';
+
+    for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
+      Cells[TOURNAMENT_GRID_PLAYER_COL, i] := Format('Player %d', [i]);
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, i] := '0';
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, i] := '0';
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, i] := '0';
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, i] := '0';
+    end;
+  end;
+end;
+
 procedure TForm1.ClearStringGrid;
 var
   col: integer;
@@ -360,6 +387,16 @@ begin
 end;
 
 procedure TForm1.GameBoardStringGridPrepareCanvas(Sender: TObject; aCol,
+  aRow: Integer; aState: TGridDrawState);
+var
+  ts: TTextStyle;
+begin
+  ts := TStringGrid(Sender).Canvas.TextStyle;
+  ts.Alignment := taCenter;
+  TStringGrid(Sender).Canvas.TextStyle := ts;
+end;
+
+procedure TForm1.TournamentStringGridPrepareCanvas(Sender: TObject; aCol,
   aRow: Integer; aState: TGridDrawState);
 var
   ts: TTextStyle;
