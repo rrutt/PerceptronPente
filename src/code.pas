@@ -40,7 +40,6 @@ type
 
     procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonPauseClick(Sender: TObject);
-    procedure SetupNewGame;
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -81,7 +80,10 @@ type
     JsonManager: TJsonFileManager;
 
     procedure InitializeTournamentGrid;
+    procedure UpdateTournamentGrid;
+    procedure SelectRandomGamePlayers;
     procedure ClearStringGrid;
+    procedure SetupNewGame;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
@@ -105,9 +107,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   p: TPerceptron;
   pi: integer;
-  pi2: integer;
   i: integer;
-  player: CellContent;
   perceptrons: TPerceptronArray;
   pp: TPlayerPerceptrons;
 begin
@@ -160,16 +160,7 @@ begin
     TournamentPlayers[pi] := pp;
   end;
 
-  for player := WhitePiece to BlackPiece do begin
-    pi := Random(TOURNAMENT_PLAYER_COUNT) + 1;
-    PlayerPerceptrons[WhitePiece] := TournamentPlayers[pi];
-
-    pi2 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
-    if (pi2 = pi) then begin
-      pi2 := (pi2 Mod TOURNAMENT_PLAYER_COUNT) + 1;
-    end;
-    PlayerPerceptrons[BlackPiece] := TournamentPlayers[pi2];
-  end;
+  SelectRandomGamePlayers;
 
   UpdatePlayerStatisticsLabels;
 
@@ -212,6 +203,8 @@ begin
   LabelGameWinnerMessage.Caption := '';
 
   MoveCount := 0;
+
+  SelectRandomGamePlayers;
 
   PlayerCaptureCount[WhitePiece] := 0;
   PlayerCaptureCount[BlackPiece] := 0;
@@ -344,6 +337,44 @@ begin
       Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, i] := '0';
     end;
   end;
+end;
+
+procedure TForm1.UpdateTournamentGrid;
+var
+  i: integer;
+  p: TPlayerPerceptrons;
+begin
+  with TournamentStringGrid do begin
+    for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
+      p := TournamentPlayers[i];
+
+      Cells[TOURNAMENT_GRID_PLAYER_COL, i] := p.PlayerName;
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, i] := Format('%d', [p.PenteWins]);
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, i] := Format('%d', [p.CaptureWins]);
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, i] := Format('%d', [p.PenteLosses]);
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, i] := Format('%d', [p.CaptureLosses]);
+    end;
+  end;
+end;
+
+procedure TForm1.SelectRandomGamePlayers;
+var
+  player: CellContent;
+  p1: integer;
+  p2: integer;
+begin
+  for player := WhitePiece to BlackPiece do begin
+    p1 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    PlayerPerceptrons[WhitePiece] := TournamentPlayers[p1];
+
+    p2 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    if (p2 = p1) then begin
+      p2 := (p2 Mod TOURNAMENT_PLAYER_COUNT) + 1;
+    end;
+    PlayerPerceptrons[BlackPiece] := TournamentPlayers[p2];
+  end;
+
+  UpdatePlayerStatisticsLabels;
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -824,6 +855,7 @@ begin
 
   if (GameOver) then begin
     UpdatePlayerStatisticsLabels;
+    UpdateTournamentGrid;
   end;
 end;
 
