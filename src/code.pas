@@ -71,10 +71,12 @@ type
     GameOver: boolean;
     ContinueAutoPlay: boolean;
 
-    PlayerName: array[WhitePiece..BlackPiece] of string;
+    PlayerColor: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPenteCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPerceptrons: array[WhitePiece..BlackPiece] of TPlayerPerceptrons;
+
+    TournamentPlayers: array[1..TOURNAMENT_PLAYER_COUNT] of TPlayerPerceptrons;
 
     JsonManager: TJsonFileManager;
 
@@ -102,6 +104,8 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 var
   p: TPerceptron;
+  pi: integer;
+  pi2: integer;
   i: integer;
   player: CellContent;
   perceptrons: TPerceptronArray;
@@ -130,8 +134,8 @@ begin
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
-  PlayerName[WhitePiece] := 'White';
-  PlayerName[BlackPiece] := 'Black';
+  PlayerColor[WhitePiece] := 'White';
+  PlayerColor[BlackPiece] := 'Black';
 
   PlayerCaptureCount[WhitePiece] := 0;
   PlayerCaptureCount[BlackPiece] := 0;
@@ -139,8 +143,9 @@ begin
   PlayerPenteCount[WhitePiece] := 0;
   PlayerPenteCount[BlackPiece] := 0;
 
-  for player := WhitePiece to BlackPiece do begin
+  for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
     pp := TPlayerPerceptrons.Create;
+    pp.PlayerName := Format('Player %d', [pi]);
     pp.PenteWins := 0;
     pp.CaptureWins := 0;
     pp.PenteLosses := 0;
@@ -152,7 +157,18 @@ begin
       p.RandomizePatternsAndWeight;
       perceptrons[i] := p;
     end;
-    PlayerPerceptrons[player] := pp;
+    TournamentPlayers[pi] := pp;
+  end;
+
+  for player := WhitePiece to BlackPiece do begin
+    pi := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    PlayerPerceptrons[WhitePiece] := TournamentPlayers[pi];
+
+    pi2 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    if (pi2 = pi) then begin
+      pi2 := (pi2 Mod TOURNAMENT_PLAYER_COUNT) + 1;
+    end;
+    PlayerPerceptrons[BlackPiece] := TournamentPlayers[pi2];
   end;
 
   UpdatePlayerStatisticsLabels;
@@ -163,14 +179,16 @@ end;
 procedure TForm1.UpdatePlayerStatisticsLabels;
 begin
   LabelWhitePlayerStatistics.Caption :=
-    Format('%d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
-    [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
+    Format('%s: %d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
+    [PlayerPerceptrons[WhitePiece].PlayerName,
+     PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
      PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
   LabelWhitePlayerStatistics.Repaint;
 
   LabelBlackPlayerStatistics.Caption :=
-    Format('%d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
-    [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
+    Format('%s: %d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
+    [PlayerPerceptrons[BlackPiece].PlayerName,
+     PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
   LabelBlackPlayerStatistics.Repaint;
 
@@ -772,12 +790,12 @@ begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins with a Pente.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
       AdjustPerceptronsAfterLoss(pp);
     end else begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Perceptron player wins with a Pente.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.PenteWins);
       AdjustPerceptronsAfterWin(pp);
@@ -789,12 +807,12 @@ begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins by Captures.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
       AdjustPerceptronsAfterLoss(pp);
     end else begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Perceptron player wins by Captures.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.CaptureWins);
       AdjustPerceptronsAfterWin(pp);

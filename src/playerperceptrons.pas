@@ -14,6 +14,7 @@ type
   TPlayerPerceptrons = class
   private
   public
+    PlayerName: string;
     PenteWins: integer;
     CaptureWins: integer;
     PenteLosses: integer;
