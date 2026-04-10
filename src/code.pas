@@ -140,7 +140,7 @@ begin
 
   for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
     pp := CreateRandomPlayer;
-    pp.PlayerName := Format('Player %d', [pi]);
+    pp.PlayerName := Format(PLAYER_NAME_FORMAT, [pi]);
     TournamentPlayers[pi] := pp;
   end;
 
@@ -335,10 +335,10 @@ begin
   with TournamentStringGrid do begin
     for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
       Cells[TOURNAMENT_GRID_PLAYER_COL, 0] := 'Player';
-      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente Win';
-      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture Win';
-      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente Loss';
-      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture Loss';
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente +';
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture +';
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente -';
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture -';
 
       p := TournamentPlayers[i];
 
@@ -502,7 +502,7 @@ begin
       for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin;
         pp := TournamentPlayers[pi];
 
-        playerName := Format('Player %d', [pi]);
+        playerName := Format(PLAYER_NAME_FORMAT, [pi]);
 
         jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
         if (jsonPlayer = nil) then begin
@@ -859,6 +859,7 @@ begin
   if (GameOver) then begin
     UpdatePlayerStatisticsLabels;
     UpdateTournamentGrid;
+    //todo: Randomly cross-breed winning player into another player.
   end;
 end;
 

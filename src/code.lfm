@@ -36,7 +36,7 @@ object Form1: TForm1
     Height = 15
     Top = 16
     Width = 133
-    Caption = 'Version 2.0.0+20260409'
+    Caption = 'Version 2.0.0+20260410'
     Color = clWhite
     ParentColor = False
     Transparent = False
@@ -290,13 +290,14 @@ object Form1: TForm1
     OnClick = ButtonPauseClick
   end
   object TournamentStringGrid: TStringGrid
-    Left = 776
-    Height = 114
-    Top = 488
-    Width = 405
-    DefaultColWidth = 80
+    Left = 872
+    Height = 160
+    Top = 448
+    Width = 305
+    DefaultColWidth = 60
     Enabled = False
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine]
+    RowCount = 7
     TabOrder = 11
     OnPrepareCanvas = TournamentStringGridPrepareCanvas
   end
