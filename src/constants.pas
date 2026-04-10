@@ -10,7 +10,6 @@ uses
   Classes, SysUtils;
 
 const
-  //todo: Add more players.
   PLAYER_NAME_FORMAT = 'Plyr %d';
   TOURNAMENT_PLAYER_COUNT = 6;
   TOURNAMENT_GRID_PLAYER_COL = 0;

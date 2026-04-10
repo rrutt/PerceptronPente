@@ -505,6 +505,17 @@ begin
         playerName := Format(PLAYER_NAME_FORMAT, [pi]);
 
         jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
+
+        // Provide backward compatiblity with Version 1 JSON files.
+        if (jsonPlayer = nil) then begin
+          if (pi = 1) then begin
+            WriteStr(playerName, WhitePiece);
+          end else if (pi = 2) then begin
+            WriteStr(playerName, BlackPiece);
+          end;
+          jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
+        end;
+
         if (jsonPlayer = nil) then begin
           pp := CreateRandomPlayer;
           pp.PlayerName := playerName;
