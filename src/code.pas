@@ -459,14 +459,14 @@ end;
 
 procedure TForm1.ButtonRandomizePerceptronsClick(Sender: TObject);
 var
+  pi: integer;
   i: integer;
   p: TPerceptron;
   pp: TPlayerPerceptrons;
-  player: CellContent;
   perceptrons: TPerceptronArray;
 begin
-  for player := WhitePiece to BlackPiece do begin
-    pp := PlayerPerceptrons[player];
+  for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
+    pp := TournamentPlayers[pi];
     pp.PenteWins := 0;
     pp.CaptureWins := 0;
     pp.PenteLosses := 0;
@@ -479,6 +479,7 @@ begin
   end;
 
   UpdatePlayerStatisticsLabels;
+  UpdateTournamentGrid;
   LabelFileMessage.Caption := 'Randomized Perceptrons';
 end;
 
@@ -870,7 +871,6 @@ begin
   if (GameOver) then begin
     UpdatePlayerStatisticsLabels;
     UpdateTournamentGrid;
-    //todo: Randomly cross-breed winning player into another player.
   end;
 end;
 
