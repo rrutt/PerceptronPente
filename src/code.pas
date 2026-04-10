@@ -79,7 +79,7 @@ type
 
     JsonManager: TJsonFileManager;
 
-    procedure InitializeTournamentGrid;
+    function CreateRandomPlayer: TPlayerPerceptrons;
     procedure UpdateTournamentGrid;
     procedure SelectRandomGamePlayers;
     procedure ClearStringGrid;
@@ -105,10 +105,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
-  p: TPerceptron;
   pi: integer;
-  i: integer;
-  perceptrons: TPerceptronArray;
   pp: TPlayerPerceptrons;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
@@ -128,8 +125,6 @@ begin
 
   TheBoard := TGameBoard.Create;
 
-  InitializeTournamentGrid;
-
   WinningPlayer := EmptyCell;
   GameOver := false;
   CurrentPlayerIsHuman := false;
@@ -144,27 +139,41 @@ begin
   PlayerPenteCount[BlackPiece] := 0;
 
   for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
-    pp := TPlayerPerceptrons.Create;
+    pp := CreateRandomPlayer;
     pp.PlayerName := Format('Player %d', [pi]);
-    pp.PenteWins := 0;
-    pp.CaptureWins := 0;
-    pp.PenteLosses := 0;
-    pp.CaptureLosses := 0;
-    SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
-    perceptrons := pp.Perceptrons;
-    for i := Low(perceptrons) to High(perceptrons) do begin
-      p := TPerceptron.Create;
-      p.RandomizePatternsAndWeight;
-      perceptrons[i] := p;
-    end;
     TournamentPlayers[pi] := pp;
   end;
+
+  UpdateTournamentGrid;
 
   SelectRandomGamePlayers;
 
   UpdatePlayerStatisticsLabels;
 
   JsonManager := TJsonFileManager.Create;
+end;
+
+function TForm1.CreateRandomPlayer: TPlayerPerceptrons;
+var
+  p: TPerceptron;
+  i: integer;
+  perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
+begin
+  pp := TPlayerPerceptrons.Create;
+  pp.PenteWins := 0;
+  pp.CaptureWins := 0;
+  pp.PenteLosses := 0;
+  pp.CaptureLosses := 0;
+  SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
+  perceptrons := pp.Perceptrons;
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := TPerceptron.Create;
+    p.RandomizePatternsAndWeight;
+    perceptrons[i] := p;
+  end;
+
+  result := pp;
 end;
 
 procedure TForm1.UpdatePlayerStatisticsLabels;
@@ -318,27 +327,6 @@ begin
   ButtonPause.Visible := false;
 end;
 
-procedure TForm1.InitializeTournamentGrid;
-var
-  i: integer;
-begin
-  with TournamentStringGrid do begin
-    Cells[TOURNAMENT_GRID_PLAYER_COL, 0] := 'Player';
-    Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente Win';
-    Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture Win';
-    Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente Loss';
-    Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture Loss';
-
-    for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
-      Cells[TOURNAMENT_GRID_PLAYER_COL, i] := Format('Player %d', [i]);
-      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, i] := '0';
-      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, i] := '0';
-      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, i] := '0';
-      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, i] := '0';
-    end;
-  end;
-end;
-
 procedure TForm1.UpdateTournamentGrid;
 var
   i: integer;
@@ -346,6 +334,12 @@ var
 begin
   with TournamentStringGrid do begin
     for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
+      Cells[TOURNAMENT_GRID_PLAYER_COL, 0] := 'Player';
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente Win';
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture Win';
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente Loss';
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture Loss';
+
       p := TournamentPlayers[i];
 
       Cells[TOURNAMENT_GRID_PLAYER_COL, i] := p.PlayerName;
@@ -493,9 +487,10 @@ var
   filename: string;
   jsonObj: TJSONObject;
   jsonPlayer: TJSONObject;
-  player: CellContent;
+  pi: integer;
   perceptrons: TPerceptronArray;
   pp: TPlayerPerceptrons;
+  playerName: string;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -504,17 +499,25 @@ begin
     end else begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
 
-      for player := WhitePiece to BlackPiece do begin
-        pp := PlayerPerceptrons[player];
+      for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin;
+        pp := TournamentPlayers[pi];
 
-        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
-        JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+        playerName := Format('Player %d', [pi]);
 
-        perceptrons := pp.Perceptrons;
-        JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
+        if (jsonPlayer = nil) then begin
+          pp := CreateRandomPlayer;
+          pp.PlayerName := playerName;
+          TournamentPlayers[pi] := pp;
+        end else begin
+          JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+          perceptrons := pp.Perceptrons;
+          JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
+        end;
       end;
 
       UpdatePlayerStatisticsLabels;
+      UpdateTournamentGrid;
       LabelFileMessage.Caption := 'Perceptrons read from file ' + filename;
     end;
   end else begin
@@ -529,7 +532,7 @@ var
 begin
   if (SaveDialog1.Execute) then begin
     filename := SaveDialog1.Filename;
-    jsonText := JsonManager.GenerateJsonString(PlayerPerceptrons);
+    jsonText := JsonManager.GenerateJsonString(TournamentPlayers);
     JsonManager.WriteJsonToFile(filename, jsonText);
     LabelFileMessage.Caption := 'Perceptrons written to file ' + PERCEPTRONS_FILE_NAME;
   end else begin

@@ -8,7 +8,6 @@
       <Unit0>
         <Filename Value="PerceptronPente.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <CursorPos Y="20"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
@@ -19,9 +18,10 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="252"/>
-        <CursorPos Y="331"/>
+        <TopLine Value="492"/>
+        <CursorPos Y="514"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -55,8 +55,8 @@
         <Filename Value="jsonfilemanager.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="160"/>
-        <CursorPos X="14" Y="169"/>
+        <TopLine Value="141"/>
+        <CursorPos Y="156"/>
         <UsageCount Value="206"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -74,122 +74,120 @@
     </Debugger>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="code.pas"/>
-        <Caret Line="344" Column="26" TopLine="326"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="183" TopLine="172"/>
       </Position1>
       <Position2>
         <Filename Value="code.pas"/>
-        <Caret Line="105" Column="40" TopLine="92"/>
+        <Caret Line="496" Column="50" TopLine="480"/>
       </Position2>
       <Position3>
         <Filename Value="code.pas"/>
       </Position3>
       <Position4>
-        <Filename Value="code.pas"/>
-        <Caret Line="44" Column="33" TopLine="29"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="177" TopLine="166"/>
       </Position4>
       <Position5>
-        <Filename Value="code.pas"/>
-        <Caret Line="227" Column="15" TopLine="218"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="183" TopLine="161"/>
       </Position5>
       <Position6>
-        <Filename Value="code.pas"/>
-        <Caret Line="43" Column="27" TopLine="27"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="23" Column="30"/>
       </Position6>
       <Position7>
-        <Filename Value="code.pas"/>
-        <Caret Line="196" Column="35" TopLine="185"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="41" Column="3" TopLine="37"/>
       </Position7>
       <Position8>
         <Filename Value="code.pas"/>
-        <Caret Line="44" Column="33" TopLine="29"/>
+        <Caret Line="518" TopLine="499"/>
       </Position8>
       <Position9>
         <Filename Value="code.pas"/>
-        <Caret Line="229" TopLine="226"/>
       </Position9>
       <Position10>
         <Filename Value="code.pas"/>
-        <Caret Line="130" TopLine="142"/>
+        <Caret Line="496" Column="50" TopLine="471"/>
       </Position10>
       <Position11>
-        <Filename Value="code.pas"/>
-        <Caret Line="43" Column="27" TopLine="29"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="26" Column="29" TopLine="9"/>
       </Position11>
       <Position12>
         <Filename Value="code.pas"/>
-        <Caret Line="199" Column="3" TopLine="191"/>
+        <Caret Line="504" Column="28" TopLine="484"/>
       </Position12>
       <Position13>
-        <Filename Value="code.pas"/>
-        <Caret Line="230" Column="53" TopLine="212"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="69" Column="37" TopLine="42"/>
       </Position13>
       <Position14>
         <Filename Value="code.pas"/>
+        <Caret Line="504" Column="28" TopLine="484"/>
       </Position14>
       <Position15>
         <Filename Value="code.pas"/>
-        <Caret Line="119" Column="33" TopLine="91"/>
       </Position15>
       <Position16>
         <Filename Value="code.pas"/>
-        <Caret Line="120" Column="37" TopLine="92"/>
+        <Caret Line="505" Column="16" TopLine="477"/>
       </Position16>
       <Position17>
         <Filename Value="code.pas"/>
-        <Caret Line="121" Column="37" TopLine="93"/>
+        <Caret Line="507" Column="45" TopLine="489"/>
       </Position17>
       <Position18>
         <Filename Value="code.pas"/>
-        <Caret Line="122" Column="27" TopLine="94"/>
+        <Caret Line="166" TopLine="142"/>
       </Position18>
       <Position19>
         <Filename Value="code.pas"/>
-        <Caret Line="169" Column="46" TopLine="152"/>
+        <Caret Line="159" TopLine="141"/>
       </Position19>
       <Position20>
         <Filename Value="code.pas"/>
-        <Caret Line="84" Column="38" TopLine="63"/>
+        <Caret Line="82" Column="14" TopLine="69"/>
       </Position20>
       <Position21>
         <Filename Value="code.pas"/>
-        <Caret Line="358" Column="41" TopLine="339"/>
+        <Caret Line="519" Column="40" TopLine="493"/>
       </Position21>
       <Position22>
         <Filename Value="code.pas"/>
-        <Caret TopLine="145"/>
+        <Caret Line="109" TopLine="91"/>
       </Position22>
       <Position23>
         <Filename Value="code.pas"/>
-        <Caret Line="89" Column="40" TopLine="67"/>
+        <Caret Line="156" Column="35" TopLine="131"/>
       </Position23>
       <Position24>
         <Filename Value="code.pas"/>
-        <Caret Line="874" Column="54" TopLine="871"/>
       </Position24>
       <Position25>
         <Filename Value="code.pas"/>
-        <Caret Line="89" Column="40" TopLine="72"/>
+        <Caret Line="82" Column="32" TopLine="55"/>
       </Position25>
       <Position26>
         <Filename Value="code.pas"/>
-        <Caret Line="839" Column="25" TopLine="819"/>
+        <Caret Line="142" Column="29" TopLine="115"/>
       </Position26>
       <Position27>
         <Filename Value="code.pas"/>
-        <Caret Line="82" Column="39" TopLine="72"/>
+        <Caret Line="156" Column="35" TopLine="128"/>
       </Position27>
       <Position28>
-        <Filename Value="code.pas"/>
-        <Caret Line="344" TopLine="316"/>
+        <Filename Value="jsonfilemanager.pas"/>
+        <Caret Line="156" TopLine="141"/>
       </Position28>
       <Position29>
         <Filename Value="code.pas"/>
-        <Caret Line="341" TopLine="315"/>
+        <Caret Line="509" TopLine="492"/>
       </Position29>
       <Position30>
         <Filename Value="jsonfilemanager.pas"/>
-        <Caret Line="169" Column="14" TopLine="160"/>
+        <Caret Line="156" TopLine="141"/>
       </Position30>
     </JumpHistory>
     <RunParams>

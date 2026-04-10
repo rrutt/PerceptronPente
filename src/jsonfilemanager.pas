@@ -23,8 +23,8 @@ type
     function ReadJsonFromFile(const FileName: string): TJSONObject;
     procedure ParsePlayerWinsAndLosses(const JsonObj: TJSONObject; PlayerPerceptrons: TPlayerPerceptrons);
     procedure ParseJsonPerceptrons(const JsonObj: TJSONObject; Perceptrons: TPerceptronArray);
-    function ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJsonObject;
-    function GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
+    function ParseJsonPlayer(const JsonObj: TJSONObject; const PlayerName: string): TJsonObject;
+    function GenerateJsonString(const TournamentPlayers: array of TPlayerPerceptrons): string;
     procedure WriteJsonToFile(const FileName: string; const JsonText: string);
   end;
 
@@ -147,18 +147,16 @@ begin
   end;
 end;
 
-function TJsonFileManager.ParseJsonPlayer(const JsonObj: TJSONObject; Player: CellContent): TJSONObject;
+function TJsonFileManager.ParseJsonPlayer(const JsonObj: TJSONObject; const PlayerName: string): TJSONObject;
 var
-  playerName: string;
   jsonPlayer: TJSONObject;
 begin
-  WriteStr(playerName, Player);
   jsonPlayer := TJSONObject(JsonObj.FindPath(playerName));
 
   result := jsonPlayer;
 end;
 
-function TJsonFileManager.GenerateJsonString(const PlayerPerceptrons: array of TPlayerPerceptrons): string;
+function TJsonFileManager.GenerateJsonString(const TournamentPlayers: array of TPlayerPerceptrons): string;
 var
   json: TJSONObject;
   jsonPlayer: TJSONObject;
@@ -167,24 +165,23 @@ var
   jsonCells: TJSONArray;
   jsonCell: TJSONObject;
   i: integer;
+  pi: integer;
   p: TPerceptron;
   col: integer;
   row: integer;
   jsonText: string;
   match: string;
-  player: CellContent;
-  playerName: string;
   perceptrons: array of TPerceptron;
   pp: TPlayerPerceptrons;
 begin
   json := TJSONObject.Create;
 
-  for player := WhitePiece to BlackPiece do begin
+  for pi := Low(TournamentPlayers) to High(TournamentPlayers) do begin
     jsonPlayer := TJSONObject.Create;
-    WriteStr(playerName, player);
-    json.Add(playerName, jsonPlayer);
 
-    pp := PlayerPerceptrons[Ord(player)];
+    pp := TournamentPlayers[pi];
+    json.Add(pp.PlayerName, jsonPlayer);
+
     jsonPlayer.Add('PenteWins', pp.PenteWins);
     jsonPlayer.Add('CaptureWins', pp.CaptureWins);
     jsonPlayer.Add('PenteLosses', pp.PenteLosses);
