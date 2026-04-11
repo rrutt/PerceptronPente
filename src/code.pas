@@ -119,6 +119,7 @@ begin
   LabelBlackPlayerStatistics.Caption := '';
   LabelFileMessage.Caption := '';
 
+  ButtonPause.Top := ButtonAutoPlay.Top;
   ButtonPause.Left := ButtonAutoPlay.Left;
   ButtonPause.Enabled := false;
   ButtonPause.Visible := false;
