@@ -302,6 +302,8 @@ begin
   Form1.ButtonPause.Enabled  := false;
   Form1.ButtonPause.Visible := false;
   Form1.ButtonAutoPlay.Enabled := True;
+  Form1.ButtonPlayWhite.Enabled := True;
+  Form1.ButtonPlayBlack.Enabled := True;
 end;
 
 procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
@@ -311,6 +313,8 @@ begin
   ButtonAutoPlay.Enabled := False;
   ButtonPause.Enabled := true;
   ButtonPause.Visible := true;
+  ButtonPlayWhite.Enabled := false;
+  ButtonPlayBlack.Enabled := false;
   ContinueAutoPlay := true;
 
   {$IFDEF LINUX}
@@ -326,6 +330,8 @@ begin
   ContinueAutoPlay := false;
   ButtonPause.Enabled := false;
   ButtonPause.Visible := false;
+  ButtonPlayWhite.Enabled := True;
+  ButtonPlayBlack.Enabled := True;
 end;
 
 procedure TForm1.UpdateTournamentGrid;

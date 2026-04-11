@@ -174,8 +174,8 @@ object Form1: TForm1
   end
   object LabelFileMessage: TLabel
     Left = 464
-    Height = 69
-    Top = 584
+    Height = 45
+    Top = 608
     Width = 398
     AutoSize = False
     Caption = 'LabelFileMessage'
@@ -293,23 +293,23 @@ object Form1: TForm1
   end
   object TournamentStringGrid: TStringGrid
     Left = 872
-    Height = 160
+    Height = 248
     Top = 448
     Width = 305
     DefaultColWidth = 60
     Enabled = False
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine]
-    RowCount = 7
+    RowCount = 11
     TabOrder = 11
     OnPrepareCanvas = TournamentStringGridPrepareCanvas
   end
   object OpenDialog1: TOpenDialog
-    Left = 1064
-    Top = 632
+    Left = 728
+    Top = 496
   end
   object SaveDialog1: TSaveDialog
     FileName = 'Perceptrons.json'
-    Left = 1144
-    Top = 632
+    Left = 808
+    Top = 496
   end
 end
