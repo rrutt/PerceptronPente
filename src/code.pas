@@ -553,7 +553,7 @@ begin
     filename := SaveDialog1.Filename;
     jsonText := JsonManager.GenerateJsonString(TournamentPlayers);
     JsonManager.WriteJsonToFile(filename, jsonText);
-    LabelFileMessage.Caption := 'Perceptrons written to file ' + PERCEPTRONS_FILE_NAME;
+    LabelFileMessage.Caption := 'Perceptrons written to file ' + filename;
   end else begin
     LabelFileMessage.Caption := '(File write operation cancelled.)';
   end;
