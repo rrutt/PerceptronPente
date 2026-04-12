@@ -1,24 +1,26 @@
 # Perceptron Pente
 
-_Version 1.0.7+20250729 ([Version Release Notes](#ReleaseNotes))_ 
+_Version 2.0.0+20260411 ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
-The game can be played by two human players, by a human against the computer, or by two computer players.
+The game can be played by two human players, by a human against the computer, or by several computer players in a randomized tournament format.
 
 The pattern matching appproach is loosely based on the **[Single Layer Perceptron](https://gist.github.com/udayzee05/f878f7807b2c201ad400fc3818a59c2d)** developed during early research into neural networks.
 
-For each computer player (White vs. Black), a set of Perceptron pattern match definitions are used to assign a numerical weight to each open board position. During each computer player move, the computer places its piece on the board position with the highest weight.
+For each computer player within the current game, a set of Perceptron pattern match definitions are used to assign a numerical weight to each open board position. During each computer player move, the computer places its piece on the board position with the highest weight.
 
 After each game ends, the program performs partial _mutations_ on some of the players' Perceptron sets. The type of mutations differ for the winning vs. the losing player. One aspect of the mutation algorithm increases the weighting preference for the most used Perceptron after a winning game.
 
-The goal is to slowly accumulate beneficial mutations that improve the strength of one or both computer players over time. The program supports unattended sessions of multiple _Auto Play_ games between the two computer players.
+The goal is to slowly accumulate beneficial mutations that improve the strength of one or more computer players over time. The program supports unattended sessions of multiple _Auto Play_ games between several computer players, usin a randomly selected pair for each game.
 
-To support this long-term strategy across multiple sessions, the program allows the current state of the players' Perceptron sets to be save to a JSON text file. The program can reload a previously saved JSON file to continue _evolving_ the computer players' Perceptron sets.
+To support this long-term strategy across multiple sessions, the program allows the current state of the players' Perceptron sets to be saved to a JSON text file. The program can reload a previously saved JSON file to continue _evolving_ the computer players' Perceptron sets.
+
+_**Note:**_ When loading a JSON file previosly saved by Version 1 of the software, the current version loads the prior White player as _Plyr 1_, the prior Black player as _Plyr 2_, and randomly generates additional players to complete the tournament roster.
 
 The **[Pente Perceptron Viewer](https://github.com/rrutt/PentePerceptronViewer)** is a companion project that displays the Perceptron matching patterns loaded from a JSON text file previously written by the **Perceptron Pente** program.
 
-The program allows the human player to play against either of the computer players. This allows independent assessment of the computer player strengths. It may also provide _forcing feedback_ to influence the computer's Perceptron set mutations.
+The program allows the human player to play against either of the current computer players. This allows independent assessment of the computer player strengths. It may also provide _forcing feedback_ to influence the computer's Perceptron set mutations.
 
 ## About the Software
 
@@ -103,7 +105,10 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 
 ## Release Notes
 
-### Version 1.0.7
+### Version 2.0.0
+
+- Support a multi-player tournament, with 8 computer players, rather than the simple _White_ vs. _Black_ structure of Version 1.
+- Correct the message displayed by the **Write Perceptrons to File** button to correctly show the selected JSON output file name.
 
 ### Version 1.0.6
 
