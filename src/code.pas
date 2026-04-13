@@ -1,4 +1,4 @@
-// Copyright 2025 Rick Rutt
+// Copyright 2025-2026 Rick Rutt
 
 unit code;
 
@@ -36,10 +36,10 @@ type
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
     SpinEditAutoPlayCount: TSpinEdit;
+    TournamentStringGrid: TStringGrid;
 
     procedure ButtonAutoPlayClick(Sender: TObject);
     procedure ButtonPauseClick(Sender: TObject);
-    procedure SetupNewGame;
     procedure ButtonNewGameClick(Sender: TObject);
     procedure ButtonPlayBlackClick(Sender: TObject);
     procedure ButtonPlayWhiteClick(Sender: TObject);
@@ -52,6 +52,8 @@ type
     procedure GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; {%H-}aState: TGridDrawState);
     procedure GameBoardStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
+      {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
+    procedure TournamentStringGridPrepareCanvas(Sender: TObject; {%H-}aCol,
       {%H-}aRow: Integer; {%H-}aState: TGridDrawState);
 
   private
@@ -68,14 +70,20 @@ type
     GameOver: boolean;
     ContinueAutoPlay: boolean;
 
-    PlayerName: array[WhitePiece..BlackPiece] of string;
+    PlayerColor: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPenteCount: array[WhitePiece..BlackPiece] of integer;
     PlayerPerceptrons: array[WhitePiece..BlackPiece] of TPlayerPerceptrons;
 
+    TournamentPlayers: array[1..TOURNAMENT_PLAYER_COUNT] of TPlayerPerceptrons;
+
     JsonManager: TJsonFileManager;
 
+    function CreateRandomPlayer: TPlayerPerceptrons;
+    procedure UpdateTournamentGrid;
+    procedure SelectRandomGamePlayers;
     procedure ClearStringGrid;
+    procedure SetupNewGame;
     procedure MoveForPlayer;
     function ComputeMatchScore(const ThePerceptron: TPerceptron; const BoardCol: integer; const BoardRow: integer): double;
     procedure AnalyzeMove(const MoveCol: integer; const MoveRow: integer; BestMovePerceptron: TPerceptron);
@@ -97,10 +105,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
-  p: TPerceptron;
-  i: integer;
-  player: CellContent;
-  perceptrons: TPerceptronArray;
+  pi: integer;
   pp: TPlayerPerceptrons;
 begin
   OpenDialog1.InitialDir := ExtractFilePath(Application.ExeName);
@@ -114,6 +119,7 @@ begin
   LabelBlackPlayerStatistics.Caption := '';
   LabelFileMessage.Caption := '';
 
+  ButtonPause.Top := ButtonAutoPlay.Top;
   ButtonPause.Left := ButtonAutoPlay.Left;
   ButtonPause.Enabled := false;
   ButtonPause.Visible := false;
@@ -124,8 +130,8 @@ begin
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
-  PlayerName[WhitePiece] := 'White';
-  PlayerName[BlackPiece] := 'Black';
+  PlayerColor[WhitePiece] := 'White';
+  PlayerColor[BlackPiece] := 'Black';
 
   PlayerCaptureCount[WhitePiece] := 0;
   PlayerCaptureCount[BlackPiece] := 0;
@@ -133,38 +139,57 @@ begin
   PlayerPenteCount[WhitePiece] := 0;
   PlayerPenteCount[BlackPiece] := 0;
 
-  for player := WhitePiece to BlackPiece do begin
-    pp := TPlayerPerceptrons.Create;
-    pp.PenteWins := 0;
-    pp.CaptureWins := 0;
-    pp.PenteLosses := 0;
-    pp.CaptureLosses := 0;
-    SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
-    perceptrons := pp.Perceptrons;
-    for i := Low(perceptrons) to High(perceptrons) do begin
-      p := TPerceptron.Create;
-      p.RandomizePatternsAndWeight;
-      perceptrons[i] := p;
-    end;
-    PlayerPerceptrons[player] := pp;
+  for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
+    pp := CreateRandomPlayer;
+    pp.PlayerName := Format(PLAYER_NAME_FORMAT, [pi]);
+    TournamentPlayers[pi] := pp;
   end;
+
+  UpdateTournamentGrid;
+
+  SelectRandomGamePlayers;
 
   UpdatePlayerStatisticsLabels;
 
   JsonManager := TJsonFileManager.Create;
 end;
 
+function TForm1.CreateRandomPlayer: TPlayerPerceptrons;
+var
+  p: TPerceptron;
+  i: integer;
+  perceptrons: TPerceptronArray;
+  pp: TPlayerPerceptrons;
+begin
+  pp := TPlayerPerceptrons.Create;
+  pp.PenteWins := 0;
+  pp.CaptureWins := 0;
+  pp.PenteLosses := 0;
+  pp.CaptureLosses := 0;
+  SetLength(pp.Perceptrons, PERCEPTRON_COUNT);
+  perceptrons := pp.Perceptrons;
+  for i := Low(perceptrons) to High(perceptrons) do begin
+    p := TPerceptron.Create;
+    p.RandomizePatternsAndWeight;
+    perceptrons[i] := p;
+  end;
+
+  result := pp;
+end;
+
 procedure TForm1.UpdatePlayerStatisticsLabels;
 begin
   LabelWhitePlayerStatistics.Caption :=
-    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
-    [PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
+    Format('%s: %d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
+    [PlayerPerceptrons[WhitePiece].PlayerName,
+     PlayerPerceptrons[WhitePiece].PenteWins, PlayerPerceptrons[WhitePiece].CaptureWins,
      PlayerPerceptrons[WhitePiece].PenteLosses, PlayerPerceptrons[WhitePiece].CaptureLosses]);
   LabelWhitePlayerStatistics.Repaint;
 
   LabelBlackPlayerStatistics.Caption :=
-    Format('%d Wins by Pente, %d Wins by Capture, %d Losses by Pente, %d Losses by Capture',
-    [PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
+    Format('%s: %d Pente Wins, %d Capture Wins, %d Pente Losses, %d Capture Losses',
+    [PlayerPerceptrons[BlackPiece].PlayerName,
+     PlayerPerceptrons[BlackPiece].PenteWins, PlayerPerceptrons[BlackPiece].CaptureWins,
      PlayerPerceptrons[BlackPiece].PenteLosses, PlayerPerceptrons[BlackPiece].CaptureLosses]);
   LabelBlackPlayerStatistics.Repaint;
 
@@ -188,6 +213,8 @@ begin
   LabelGameWinnerMessage.Caption := '';
 
   MoveCount := 0;
+
+  SelectRandomGamePlayers;
 
   PlayerCaptureCount[WhitePiece] := 0;
   PlayerCaptureCount[BlackPiece] := 0;
@@ -275,6 +302,8 @@ begin
   Form1.ButtonPause.Enabled  := false;
   Form1.ButtonPause.Visible := false;
   Form1.ButtonAutoPlay.Enabled := True;
+  Form1.ButtonPlayWhite.Enabled := True;
+  Form1.ButtonPlayBlack.Enabled := True;
 end;
 
 procedure TForm1.ButtonAutoPlayClick(Sender: TObject);
@@ -284,6 +313,8 @@ begin
   ButtonAutoPlay.Enabled := False;
   ButtonPause.Enabled := true;
   ButtonPause.Visible := true;
+  ButtonPlayWhite.Enabled := false;
+  ButtonPlayBlack.Enabled := false;
   ContinueAutoPlay := true;
 
   {$IFDEF LINUX}
@@ -299,6 +330,52 @@ begin
   ContinueAutoPlay := false;
   ButtonPause.Enabled := false;
   ButtonPause.Visible := false;
+  ButtonPlayWhite.Enabled := True;
+  ButtonPlayBlack.Enabled := True;
+end;
+
+procedure TForm1.UpdateTournamentGrid;
+var
+  i: integer;
+  p: TPlayerPerceptrons;
+begin
+  with TournamentStringGrid do begin
+    for i := 1 to TOURNAMENT_PLAYER_COUNT do begin
+      Cells[TOURNAMENT_GRID_PLAYER_COL, 0] := 'Player';
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, 0] := 'Pente +';
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, 0] := 'Capture +';
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, 0] := 'Pente -';
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, 0] := 'Capture -';
+
+      p := TournamentPlayers[i];
+
+      Cells[TOURNAMENT_GRID_PLAYER_COL, i] := p.PlayerName;
+      Cells[TOURNAMENT_GRID_PENTE_WIN_COL, i] := Format('%d', [p.PenteWins]);
+      Cells[TOURNAMENT_GRID_CAPTURE_WIN_COL, i] := Format('%d', [p.CaptureWins]);
+      Cells[TOURNAMENT_GRID_PENTE_LOSS_COL, i] := Format('%d', [p.PenteLosses]);
+      Cells[TOURNAMENT_GRID_CAPTURE_LOSS_COL, i] := Format('%d', [p.CaptureLosses]);
+    end;
+  end;
+end;
+
+procedure TForm1.SelectRandomGamePlayers;
+var
+  player: CellContent;
+  p1: integer;
+  p2: integer;
+begin
+  for player := WhitePiece to BlackPiece do begin
+    p1 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    PlayerPerceptrons[WhitePiece] := TournamentPlayers[p1];
+
+    p2 := Random(TOURNAMENT_PLAYER_COUNT) + 1;
+    if (p2 = p1) then begin
+      p2 := (p2 Mod TOURNAMENT_PLAYER_COUNT) + 1;
+    end;
+    PlayerPerceptrons[BlackPiece] := TournamentPlayers[p2];
+  end;
+
+  UpdatePlayerStatisticsLabels;
 end;
 
 procedure TForm1.ClearStringGrid;
@@ -369,6 +446,16 @@ begin
   TStringGrid(Sender).Canvas.TextStyle := ts;
 end;
 
+procedure TForm1.TournamentStringGridPrepareCanvas(Sender: TObject; aCol,
+  aRow: Integer; aState: TGridDrawState);
+var
+  ts: TTextStyle;
+begin
+  ts := TStringGrid(Sender).Canvas.TextStyle;
+  ts.Alignment := taCenter;
+  TStringGrid(Sender).Canvas.TextStyle := ts;
+end;
+
 procedure TForm1.ButtonPlayWhiteClick(Sender: TObject);
 begin
   CurrentPlayerIsHuman := false;
@@ -379,14 +466,14 @@ end;
 
 procedure TForm1.ButtonRandomizePerceptronsClick(Sender: TObject);
 var
+  pi: integer;
   i: integer;
   p: TPerceptron;
   pp: TPlayerPerceptrons;
-  player: CellContent;
   perceptrons: TPerceptronArray;
 begin
-  for player := WhitePiece to BlackPiece do begin
-    pp := PlayerPerceptrons[player];
+  for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin
+    pp := TournamentPlayers[pi];
     pp.PenteWins := 0;
     pp.CaptureWins := 0;
     pp.PenteLosses := 0;
@@ -399,6 +486,7 @@ begin
   end;
 
   UpdatePlayerStatisticsLabels;
+  UpdateTournamentGrid;
   LabelFileMessage.Caption := 'Randomized Perceptrons';
 end;
 
@@ -407,9 +495,10 @@ var
   filename: string;
   jsonObj: TJSONObject;
   jsonPlayer: TJSONObject;
-  player: CellContent;
+  pi: integer;
   perceptrons: TPerceptronArray;
   pp: TPlayerPerceptrons;
+  playerName: string;
 begin
   if (OpenDialog1.Execute) then begin
     filename := OpenDialog1.Filename;
@@ -418,17 +507,36 @@ begin
     end else begin
       jsonObj := JsonManager.ReadJsonFromFile(filename);
 
-      for player := WhitePiece to BlackPiece do begin
-        pp := PlayerPerceptrons[player];
+      for pi := 1 to TOURNAMENT_PLAYER_COUNT do begin;
+        pp := TournamentPlayers[pi];
 
-        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, player);
-        JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+        playerName := Format(PLAYER_NAME_FORMAT, [pi]);
 
-        perceptrons := pp.Perceptrons;
-        JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
+        jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
+
+        // Provide backward compatiblity with Version 1 JSON files.
+        if (jsonPlayer = nil) then begin
+          if (pi = 1) then begin
+            WriteStr(playerName, WhitePiece);
+          end else if (pi = 2) then begin
+            WriteStr(playerName, BlackPiece);
+          end;
+          jsonPlayer := jsonManager.ParseJsonPlayer(jsonObj, playerName);
+        end;
+
+        if (jsonPlayer = nil) then begin
+          pp := CreateRandomPlayer;
+          pp.PlayerName := playerName;
+          TournamentPlayers[pi] := pp;
+        end else begin
+          JsonManager.ParsePlayerWinsAndLosses(jsonPlayer, pp);
+          perceptrons := pp.Perceptrons;
+          JsonManager.ParseJsonPerceptrons(jsonPlayer, perceptrons);
+        end;
       end;
 
       UpdatePlayerStatisticsLabels;
+      UpdateTournamentGrid;
       LabelFileMessage.Caption := 'Perceptrons read from file ' + filename;
     end;
   end else begin
@@ -443,9 +551,9 @@ var
 begin
   if (SaveDialog1.Execute) then begin
     filename := SaveDialog1.Filename;
-    jsonText := JsonManager.GenerateJsonString(PlayerPerceptrons);
+    jsonText := JsonManager.GenerateJsonString(TournamentPlayers);
     JsonManager.WriteJsonToFile(filename, jsonText);
-    LabelFileMessage.Caption := 'Perceptrons written to file ' + PERCEPTRONS_FILE_NAME;
+    LabelFileMessage.Caption := 'Perceptrons written to file ' + filename;
   end else begin
     LabelFileMessage.Caption := '(File write operation cancelled.)';
   end;
@@ -735,12 +843,12 @@ begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins with a Pente.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins with a Pente.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.PenteLosses);
       AdjustPerceptronsAfterLoss(pp);
     end else begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins with a Pente.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Perceptron player wins with a Pente.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.PenteWins);
       AdjustPerceptronsAfterWin(pp);
@@ -752,12 +860,12 @@ begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
     if (CurrentPlayerIsHuman) then begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Human player wins by Captures.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins by Captures.';
       pp := PlayerPerceptrons[otherPlayer];
       Inc(pp.CaptureLosses);
       AdjustPerceptronsAfterLoss(pp);
     end else begin
-      LabelGameWinnerMessage.Caption := PlayerName[CurrentPlayer] + ' Perceptron player wins by Captures.';
+      LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Perceptron player wins by Captures.';
       pp := PlayerPerceptrons[CurrentPlayer];
       Inc(pp.CaptureWins);
       AdjustPerceptronsAfterWin(pp);
@@ -769,6 +877,7 @@ begin
 
   if (GameOver) then begin
     UpdatePlayerStatisticsLabels;
+    UpdateTournamentGrid;
   end;
 end;
 

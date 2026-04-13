@@ -1,4 +1,4 @@
-// Copyright 2025 Rick Rutt
+// Copyright 2025-2026 Rick Rutt
 
 unit playerperceptrons;
 
@@ -14,6 +14,7 @@ type
   TPlayerPerceptrons = class
   private
   public
+    PlayerName: string;
     PenteWins: integer;
     CaptureWins: integer;
     PenteLosses: integer;
