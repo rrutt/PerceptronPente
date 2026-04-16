@@ -64,16 +64,17 @@ Here is an image of the Perceptron Pente form during a game
 
 The Form contains these elements:
 
-- The 9x9 Game Board. Left-click on any cell to make a manual move for White. Right-click on any cell to make a manual move for Black.
+- The 9x9 Game Board. _Left-click_ on any cell to make a manual move for White. _Right-click_ on any cell to make a manual move for Black.
 - The corresponding 9x9 grid showing cell move weights based on Perceptron matching scores.
 - A text label showing the most recent game winner.
 - Click the **Play White** button to have the computer make a move for White based on Perceptron pattern matching. The Wins and Losses statistics for White appear next to this button.
 - Click the **Play Black** button to have the computer make a move for Black based on Perceptron pattern matching. The Wins and Losses statistics for Black appear next to this button.
-- Click tne **New Game** button to clear the Game Board to start a new game.
+- Click tne **New Game** button to clear the Game Board to start a new game.  Two computer players are randomly selected from the roster of tournament players.
 - Click the **Auto Play** button to have the computer play both players agains each other until one wins.  The _spin edit_ control determines how many successive Auto Play games to play. Type a number, or use the _up_ or _down_ arrow to set the value.
-- Click the **Write Perceptrons to File** button to save the current Perceptron sets for both players to a JSON text file. A file save dialog will appear.
-- Click the **Read Perceptrons from File** button to load both players' Perceptron sets from a previously saved JSON text file. (The **dat** sub-folder contains a _pre-evolved JSON text file.)
-- Click the **Randomize Perceptrons** button to generate new random Perceptron sets for both players.
+- Click the **Write Perceptrons to File** button to save the current Perceptron sets for all tournament players to a JSON text file. A file save dialog will appear.
+- Click the **Read Perceptrons from File** button to load all tournament players' Perceptron sets from a previously saved JSON text file. (The **dat** sub-folder contains a _pre-evolved_ JSON text file.)
+- Click the **Randomize Perceptrons** button to generate new random Perceptron sets for all tournament players.
+- A small grid showing the current roster of tournament computer players and their associated win/loss statistics.
 
 When the program first starts, the **Randomize Perceptrons** feature is automatically executed. You may wish to reload the player Perceptron sets from a previously saved JSON text file.
 
@@ -81,7 +82,7 @@ Notes on **Auto Play**:
 
 - While an Auto Play session is in progress. the **Auto Play** button changes into a **Pause** button.
 - Click the **Pause** button to suspend the Auto Play session. The button returns to **Auto Play**.
-- You can finish the paused game using manual moves in the Game Board, or by clicking the **Play White** or **Play Black** buttons, to continue the Auto Play session with a new game.
+- You can finish the paused game using manual moves in the Game Board, or by clicking the **Play White** or **Play Black** buttons, to continue additional turns in the current game.  Click the **Auto Play** button to resume automatic play.
 
 ## Source code compilation notes
 
