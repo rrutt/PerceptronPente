@@ -25,7 +25,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="1"/>
+      <BuildNr Value="2"/>
       <Language Value="040B"/>
       <CharSet Value="04E6"/>
       <StringTable CompanyName="Richard Rutt" FileDescription="Perceptron Pente" LegalCopyright="Copyright 2025-2026 Rick Rutt" ProductName="Perceptron Pente" ProductVersion="2.1.0+20260921"/>

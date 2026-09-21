@@ -1,6 +1,6 @@
 # Perceptron Pente
 
-_Version 2.0.0+20260411 ([Version Release Notes](#ReleaseNotes))_ 
+_Version 2.1.0+20260921 ([Version Release Notes](#ReleaseNotes))_ 
 
 **Perceptron Pente** is an open source implementation of the **[Pente](https://en.wikipedia.org/wiki/Pente)** board game that uses simplified neural network inspired artificial intelligence pattern matching.
 
@@ -105,6 +105,11 @@ Then rebuild the executable using the **Run | Build** menu item (or using the sh
 <a name="ReleaseNotes"></a>
 
 ## Release Notes
+
+### Version 2.1.0
+
+- Added a check box option for **Fast Auto Play** to skip the short delay between games to support faster _evolution_ of Perceptron players.
+(The delay normally occurs during Auto Play to allow the user to quickly review the results of each game.
 
 ### Version 2.0.0
 
