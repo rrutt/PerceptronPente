@@ -25,6 +25,7 @@ type
     ButtonPlayBlack: TButton;
     ButtonNewGame: TButton;
     ButtonReadPerceptronsFromFile: TButton;
+    CheckBoxFastAutoPlay: TCheckBox;
     GameBoardDrawGrid: TDrawGrid;
     HeadLabel1: TLabel;
     HeadLabel3: TLabel;
@@ -46,6 +47,7 @@ type
     procedure ButtonRandomizePerceptronsClick(Sender: TObject);
     procedure ButtonReadPerceptronsFromFileClick(Sender: TObject);
     procedure ButtonWritePerceptronsToFileClick(Sender: TObject);
+    procedure CheckBoxFastAutoPlayChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure GameBoardDrawGridMouseDown(Sender: TObject; Button: TMouseButton;
       {%H-}Shift: TShiftState; X, Y: Integer);
@@ -69,6 +71,7 @@ type
 
     GameOver: boolean;
     ContinueAutoPlay: boolean;
+    FastAutoPlay: boolean;
 
     PlayerColor: array[WhitePiece..BlackPiece] of string;
     PlayerCaptureCount: array[WhitePiece..BlackPiece] of integer;
@@ -267,10 +270,14 @@ begin
 
     repeat
       Form1.MoveForPlayer;
+
       Form1.GameBoardDrawGrid.Repaint;
       Form1.GameBoardStringGrid.Repaint;
 
-      Sleep(AUTO_PLAY_MOVE_SLEEP_MILLISECONDS);
+      if (not Form1.FastAutoPlay) then begin
+        Sleep(AUTO_PLAY_MOVE_SLEEP_MILLISECONDS);
+      end;
+
       {$IFDEF LINUX}
       Application.ProcessMessages;
       {$ELSE}
@@ -287,7 +294,11 @@ begin
     until (Form1.GameOver or (not Form1.ContinueAutoPlay));
 
     Form1.LabelGameWinnerMessage.Repaint;
-    Sleep(AUTO_PLAY_GAME_SLEEP_MILLISECONDS);
+
+    if (not Form1.FastAutoPlay) then begin
+      Sleep(AUTO_PLAY_GAME_SLEEP_MILLISECONDS);
+    end;
+
     {$IFDEF LINUX}
     Application.ProcessMessages;
     {$ELSE}
@@ -559,6 +570,11 @@ begin
   end;
 end;
 
+procedure TForm1.CheckBoxFastAutoPlayChange(Sender: TObject);
+begin
+  FastAutoPlay := CheckBoxFastAutoPlay.Checked;
+end;
+
 procedure TForm1.ButtonPlayBlackClick(Sender: TObject);
 begin
   CurrentPlayerIsHuman := false;
@@ -602,6 +618,7 @@ begin
         cellScore := 0.0;
 
         GameBoardStringGrid.Cells[boardCol, boardRow] := '.';
+
         if ((TheBoard.Cells[boardCol, boardRow] = EmptyCell) or (TheBoard.Cells[boardCol, boardRow] = CapturedCell)) then begin
           Inc(emptyCellCount);
 
@@ -658,10 +675,12 @@ begin
     if (bestMovePerceptron <> nil) then begin
       inc(bestMovePerceptron.UsageCount);
     end;
+
     TheBoard.Cells[bestCol, bestRow] := CurrentPlayer;
-    GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
-    AnalyzeMove(bestCol, bestRow, bestMovePerceptron);
-    GameBoardDrawGrid.Invalidate;
+
+      GameBoardStringGrid.Cells[bestCol, bestRow] := '<<' + GameBoardStringGrid.Cells[bestCol, bestRow] + '>>';
+      AnalyzeMove(bestCol, bestRow, bestMovePerceptron);
+      GameBoardDrawGrid.Invalidate;
   end;
 
   inc(MoveCount);
@@ -796,12 +815,15 @@ begin
             Inc(PlayerPenteCount[CurrentPlayer]);
 
             GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Pente ' + IntToStr(PlayerPenteCount[CurrentPlayer]);
+
             whileLooping := false;
           end else if (direction > HALF_DIRECTION) then begin
             oppositeDirection := direction - HALF_DIRECTION;
             if ((selfNeighborCount[direction] + selfNeighborCount[oppositeDirection] + 1) >= PENTE_PIECE_COUNT) then begin
               inc(PlayerPenteCount[CurrentPlayer]);
+
               GameBoardStringGrid.Cells[MoveCol, MoveRow] := 'Mid-Pente ' + IntToStr(PlayerPenteCount[CurrentPlayer]);
+
               whileLooping := false;
             end;
           end;
@@ -820,6 +842,7 @@ begin
           for i := 1 to CAPTURE_PIECE_COUNT do begin;
             TheBoard.Cells[MoveCol + (offsetCol * (offsetIndex - i)), MoveRow + (offsetRow * (offsetIndex - i))] := CapturedCell;
           end;
+
           whileLooping := false;
         end;
       end else if (cell = otherPlayer) then begin

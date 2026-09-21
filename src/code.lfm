@@ -36,7 +36,7 @@ object Form1: TForm1
     Height = 15
     Top = 16
     Width = 133
-    Caption = 'Version 2.0.0+20260411'
+    Caption = 'Version 2.1.0+20260921'
     Color = clWhite
     ParentColor = False
     Transparent = False
@@ -54,7 +54,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 9
+    TabOrder = 10
     OnDrawCell = GameBoardDrawGridDrawCell
     OnMouseDown = GameBoardDrawGridMouseDown
   end
@@ -69,7 +69,7 @@ object Form1: TForm1
     FixedCols = 9
     FixedRows = 9
     RowCount = 9
-    TabOrder = 10
+    TabOrder = 11
     OnPrepareCanvas = GameBoardStringGridPrepareCanvas
   end
   object LabelGameWinnerMessage: TLabel
@@ -190,7 +190,7 @@ object Form1: TForm1
     WordWrap = True
   end
   object ButtonRandomizePerceptrons: TButton
-    Left = 560
+    Left = 566
     Height = 38
     Top = 656
     Width = 248
@@ -300,8 +300,25 @@ object Form1: TForm1
     Enabled = False
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine]
     RowCount = 9
-    TabOrder = 11
+    TabOrder = 12
     OnPrepareCanvas = TournamentStringGridPrepareCanvas
+  end
+  object CheckBoxFastAutoPlay: TCheckBox
+    Left = 416
+    Height = 23
+    Top = 8
+    Width = 116
+    Caption = 'Fast Auto Play'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -16
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 9
+    OnChange = CheckBoxFastAutoPlayChange
   end
   object OpenDialog1: TOpenDialog
     Left = 656
