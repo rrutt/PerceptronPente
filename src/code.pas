@@ -69,6 +69,9 @@ type
     OpponentPlayer: CellContent;
     WinningPlayer: CellContent;
 
+    WinningCol: integer;
+    WinningRow: integer;
+
     GameOver: boolean;
     ContinueAutoPlay: boolean;
     FastAutoPlay: boolean;
@@ -130,6 +133,9 @@ begin
   TheBoard := TGameBoard.Create;
 
   WinningPlayer := EmptyCell;
+  WinningCol := -1;
+  WinningRow := -1;
+
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
@@ -226,6 +232,9 @@ begin
   PlayerPenteCount[BlackPiece] := 0;
 
   WinningPlayer := EmptyCell;
+  WinningCol := -1;
+  WinningRow := -1;
+
   GameOver := false;
   CurrentPlayerIsHuman := false;
 
@@ -434,6 +443,12 @@ begin
   theCanvas := TDrawGrid(Sender).Canvas;
 
   cell := TheBoard.Cells[aCol, aRow];
+
+  if ((aCol = WinningCol) and (aRow = WinningRow)) then begin
+    theCanvas.Pen.Color := clGreen;
+    theCanvas.Pen.Style := psSolid;
+    theCanvas.Pen.Width := 5;
+  end;
 
   if (cell = WhitePiece) then begin
     theCanvas.Brush.Color := clWhite;
@@ -862,9 +877,13 @@ begin
     end;
   end;
 
+  //TODO: Mark winning move on board with a Green dot.
   if (PlayerPenteCount[CurrentPlayer] > 0) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
+    WinningCol := MoveCol;
+    WinningRow := MoveRow;
+
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins with a Pente.';
       pp := PlayerPerceptrons[otherPlayer];
@@ -882,6 +901,9 @@ begin
   end else if (PlayerCaptureCount[CurrentPlayer] >= CAPTURE_WIN_COUNT) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
+    WinningCol := MoveCol;
+    WinningRow := MoveRow;
+
     if (CurrentPlayerIsHuman) then begin
       LabelGameWinnerMessage.Caption := PlayerColor[CurrentPlayer] + ' Human player wins by Captures.';
       pp := PlayerPerceptrons[otherPlayer];
