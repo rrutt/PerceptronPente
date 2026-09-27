@@ -8,9 +8,9 @@
       <Unit0>
         <Filename Value="PerceptronPente.lpr"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="6" Y="13"/>
         <UsageCount Value="201"/>
-        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="code.pas"/>
@@ -19,9 +19,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="446"/>
-        <CursorPos X="29" Y="450"/>
+        <TopLine Value="864"/>
+        <CursorPos Y="880"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -29,14 +28,14 @@
       <Unit2>
         <Filename Value="constants.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="5"/>
         <UsageCount Value="228"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="gameboard.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="10"/>
         <CursorPos X="33"/>
         <UsageCount Value="219"/>
@@ -45,7 +44,7 @@
       <Unit4>
         <Filename Value="perceptron.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="121"/>
         <CursorPos X="31" Y="138"/>
         <UsageCount Value="214"/>
@@ -54,14 +53,14 @@
       <Unit5>
         <Filename Value="jsonfilemanager.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="1"/>
         <UsageCount Value="206"/>
         <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="playerperceptrons.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="2"/>
         <CursorPos Y="12"/>
         <UsageCount Value="1311"/>
         <Loaded Value="True"/>
@@ -178,22 +177,22 @@
       </Position25>
       <Position26>
         <Filename Value="code.pas"/>
-        <Caret Line="885" Column="45" TopLine="898"/>
       </Position26>
       <Position27>
         <Filename Value="code.pas"/>
+        <Caret Line="72" Column="15" TopLine="45"/>
       </Position27>
       <Position28>
         <Filename Value="code.pas"/>
-        <Caret Line="72" Column="15" TopLine="45"/>
+        <Caret Line="136" Column="13" TopLine="108"/>
       </Position28>
       <Position29>
         <Filename Value="code.pas"/>
-        <Caret Line="136" Column="13" TopLine="108"/>
+        <Caret Line="235" Column="13" TopLine="207"/>
       </Position29>
       <Position30>
         <Filename Value="code.pas"/>
-        <Caret Line="235" Column="13" TopLine="207"/>
+        <Caret Line="450" Column="29" TopLine="446"/>
       </Position30>
     </JumpHistory>
     <RunParams>

@@ -877,7 +877,6 @@ begin
     end;
   end;
 
-  //TODO: Mark winning move on board with a Green dot.
   if (PlayerPenteCount[CurrentPlayer] > 0) then begin
     GameOver := true;
     WinningPlayer := CurrentPlayer;
