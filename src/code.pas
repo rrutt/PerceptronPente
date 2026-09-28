@@ -432,6 +432,7 @@ begin
   TheBoard.Cells[col, row] := CurrentPlayer;
 
   AnalyzeMove(col, row, nil);
+  GameBoardDrawGrid.Repaint;
 end;
 
 procedure TForm1.GameBoardDrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
