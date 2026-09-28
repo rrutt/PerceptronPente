@@ -13,8 +13,8 @@ object Form1: TForm1
   Font.Height = -13
   Font.Name = 'Calibri'
   Font.Style = [fsBold]
+  LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
-  LCLVersion = '3.8.0.0'
   object HeadLabel1: TLabel
     Left = 16
     Height = 42
