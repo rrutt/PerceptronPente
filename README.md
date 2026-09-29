@@ -81,9 +81,11 @@ When the program first starts, the **Randomize Perceptrons** feature is automati
 Notes on **Auto Play**:
 
 - While an Auto Play session is in progress. the **Auto Play** button changes into a **Pause** button.
+- As each game completes, the winnning move (if the game is not a draw) is highlighted with a green border.
+A slight pause occurs before the next game to allow for visual review of the game results.
+_However_, if **Fast Auto Play** is _checked_, each successive game starts immediately.
 - Click the **Pause** button to suspend the Auto Play session. The button returns to **Auto Play**.
 - You can finish the paused game using manual moves in the Game Board, or by clicking the **Play White** or **Play Black** buttons, to continue additional turns in the current game.  Click the **Auto Play** button to resume automatic play.
-- If the **Fast Auto Play** check-box is _checked_, each successive game starts immediately after the prior game completes; if _unchecked_, there is a slight pause to allow for visual review of the prior game results.
 - The _spin edit_ control may not accept typed values on Ubuntu Linux, due to a GTK Toolkit incompatibility.  You can still use the _up_ or _down_ arrow to set the number of Auto Play games.
 
 ## Source code compilation notes
